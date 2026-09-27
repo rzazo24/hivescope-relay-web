@@ -30,6 +30,7 @@
   },
   "chat": {
     "connecting": "$ connecting…",
+    "reconnecting": "[!] connection lost, reconnecting…",
     "empty": "// no messages yet — say something",
     "you": "you",
     "placeholder": "type a message…",

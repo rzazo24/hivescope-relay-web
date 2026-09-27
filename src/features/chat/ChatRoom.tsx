@@ -49,11 +49,20 @@ export function ChatRoom({
         <button type="button" onClick={onBack} className="text-xs text-muted hover:text-ink">
           {t('rooms.back')}
         </button>
-        <p className="truncate text-xs text-muted">{room.name}</p>
+        <div className="flex items-center gap-1.5 text-xs text-muted">
+          <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
+          <span className="truncate">{room.name}</span>
+        </div>
       </div>
 
+      {/* Solo oculta el historial en la conexión inicial; si se cae después
+          de haber cargado mensajes, se ven igual y solo aparece el aviso. */}
+      {!connected && messages.length > 0 && (
+        <p className="text-xs text-error">{t('chat.reconnecting')}</p>
+      )}
+
       <div ref={listRef} className="flex h-72 flex-col gap-2 overflow-y-auto rounded-md border border-border bg-code p-3">
-        {!connected && <p className="text-xs text-muted">{t('chat.connecting')}</p>}
+        {!connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.connecting')}</p>}
         {connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.empty')}</p>}
 
         {messages.map((msg) => {

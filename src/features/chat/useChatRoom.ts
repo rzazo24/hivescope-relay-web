@@ -34,7 +34,9 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     setConnected(false)
     setError(null)
 
-    Relay.connect(RELAY_URL)
+    let pollHandle: ReturnType<typeof setInterval> | undefined
+
+    Relay.connect(RELAY_URL, { enableReconnect: true })
       .then((relay) => {
         if (cancelled) {
           relay.close()
@@ -42,6 +44,13 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
         }
         relayRef.current = relay
         setConnected(true)
+
+        // nostr-tools reconecta solo (con backoff) y vuelve a lanzar esta
+        // suscripción al recuperar la conexión, pidiendo solo lo nuevo
+        // desde el último evento visto -- no hace falta resuscribir a mano.
+        // relay.connected no dispara ningún evento propio, así que lo
+        // sondeamos para reflejar caídas/reconexiones reales en la UI.
+        pollHandle = setInterval(() => setConnected(relay.connected), 1000)
 
         relay.subscribe([{ kinds: [9], '#t': [slug], limit: 200 }], {
           onevent(event) {
@@ -59,6 +68,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
 
     return () => {
       cancelled = true
+      if (pollHandle) clearInterval(pollHandle)
       relayRef.current?.close()
       relayRef.current = null
     }
