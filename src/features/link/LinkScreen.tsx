@@ -1,30 +1,27 @@
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHiveLink } from './useHiveLink'
+import type { KeychainStatus } from './useHiveLink'
 
-export function LinkScreen() {
+interface LinkScreenProps {
+  checking: boolean
+  keychainStatus: KeychainStatus
+  submitting: boolean
+  error: string | null
+  onLink: (account: string) => void
+}
+
+export function LinkScreen({ checking, keychainStatus, submitting, error, onLink }: LinkScreenProps) {
   const { t } = useTranslation()
-  const { keychainStatus, linkStatus, submitting, error, link } = useHiveLink()
   const [account, setAccount] = useState('')
 
-  if (linkStatus.state === 'checking') {
+  if (checking) {
     return <p className="text-sm text-muted">{t('link.checkingLink')}</p>
-  }
-
-  if (linkStatus.state === 'linked') {
-    return (
-      <div className="text-sm">
-        <p className="text-muted">{t('link.whoami')}</p>
-        <p className="mt-1 text-lg font-bold text-ink">@{linkStatus.account}</p>
-        <p className="mt-2 text-xs text-success">{t('link.linkedOk')}</p>
-      </div>
-    )
   }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const trimmed = account.trim().toLowerCase()
-    if (trimmed) link(trimmed)
+    if (trimmed) onLink(trimmed)
   }
 
   return (
@@ -61,7 +58,7 @@ export function LinkScreen() {
   )
 }
 
-function KeychainBanner({ status }: { status: 'checking' | 'found' | 'not-found' }) {
+function KeychainBanner({ status }: { status: KeychainStatus }) {
   const { t } = useTranslation()
 
   if (status === 'checking') {

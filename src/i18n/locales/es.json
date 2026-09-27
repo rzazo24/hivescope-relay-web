@@ -14,5 +14,19 @@
     "keychainNotFound": "[!] hive_keychain no detectado todavía — si tienes la extensión o la app instalada, prueba igual, a veces tarda un momento en inyectarse",
     "submitting": "> firmando…",
     "submit": "> vincular con hive keychain"
+  },
+  "rooms": {
+    "prompt": "$ ls rooms/",
+    "linkedAs": "vinculado como @{{account}}",
+    "loading": "$ cargando salas…",
+    "empty": "// todavía no hay salas — crea la primera abajo",
+    "createPrompt": "$ mkdir",
+    "namePlaceholder": "nombre de la sala",
+    "create": "> crear sala",
+    "creating": "> creando…",
+    "adminPrefix": "admin:",
+    "back": "< cd ..",
+    "enteredTitle": "$ cd {{slug}}",
+    "enteredBody": "// vista de chat próximamente"
   }
 }

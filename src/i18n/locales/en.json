@@ -14,5 +14,19 @@
     "keychainNotFound": "[!] hive_keychain not detected yet — if you have the extension or app installed, try anyway, it sometimes takes a moment to inject itself",
     "submitting": "> signing…",
     "submit": "> link with hive keychain"
+  },
+  "rooms": {
+    "prompt": "$ ls rooms/",
+    "linkedAs": "linked as @{{account}}",
+    "loading": "$ loading rooms…",
+    "empty": "// no rooms yet — create the first one below",
+    "createPrompt": "$ mkdir",
+    "namePlaceholder": "room name",
+    "create": "> create room",
+    "creating": "> creating…",
+    "adminPrefix": "admin:",
+    "back": "< cd ..",
+    "enteredTitle": "$ cd {{slug}}",
+    "enteredBody": "// chat view coming soon"
   }
 }
