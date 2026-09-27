@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { linkChallenge, requestHiveSignature, waitForKeychain } from '../../lib/hiveKeychain'
-import { getOrCreateIdentity } from '../../lib/nostrIdentity'
+import { clearIdentity, getOrCreateIdentity } from '../../lib/nostrIdentity'
 import { findHiveLink, publishEvent } from '../../lib/relay'
 
 export type KeychainStatus = 'checking' | 'found' | 'not-found'
@@ -58,5 +58,14 @@ export function useHiveLink() {
     [identity],
   )
 
-  return { identity, keychainStatus, linkStatus, submitting, error, link }
+  // Recarga la página en vez de solo resetear el estado de React: hay otros
+  // hooks (useRooms, useChatRoom) con su propia suscripción/estado que
+  // también asumen la identidad de esta pestaña, más simple y más seguro
+  // reiniciar todo que tratar de sincronizarlos a mano.
+  const logout = useCallback(() => {
+    clearIdentity()
+    window.location.reload()
+  }, [])
+
+  return { identity, keychainStatus, linkStatus, submitting, error, link, logout }
 }

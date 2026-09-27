@@ -10,7 +10,7 @@ import { RoomList } from './features/rooms/RoomList'
 
 function App() {
   const { t } = useTranslation()
-  const { identity, keychainStatus, linkStatus, submitting, error, link } = useHiveLink()
+  const { identity, keychainStatus, linkStatus, submitting, error, link, logout } = useHiveLink()
   const linked = linkStatus.state === 'linked'
   const [helpOpen, setHelpOpen] = useState(false)
 
@@ -35,9 +35,20 @@ function App() {
           esa fila chica solo aparece una vez vinculado, cuando ya no hay
           ningún h1 haciendo de marca en la pantalla. */}
       {linked && (
-        <div className="flex items-center gap-2">
-          <img src="/favicon.svg" alt="" className="h-5 w-5 rounded" />
-          <span className="text-sm font-bold tracking-wide text-ink">HiveScope Chat</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <img src="/favicon.svg" alt="" className="h-5 w-5 rounded" />
+            <span className="text-sm font-bold tracking-wide text-ink">HiveScope Chat</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(t('link.logoutConfirm'))) logout()
+            }}
+            className="text-xs text-muted underline decoration-dotted underline-offset-2 hover:text-error"
+          >
+            {t('link.logout')}
+          </button>
         </div>
       )}
 

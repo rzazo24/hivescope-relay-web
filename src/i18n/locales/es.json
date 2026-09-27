@@ -13,7 +13,9 @@
     "keychainFound": "[ok] hive_keychain detectado",
     "keychainNotFound": "[!] hive_keychain no detectado todavía — si tienes la extensión o la app instalada, prueba igual, a veces tarda un momento en inyectarse",
     "submitting": "> firmando…",
-    "submit": "> vincular con hive keychain"
+    "submit": "> vincular con hive keychain",
+    "logout": "cerrar sesión",
+    "logoutConfirm": "¿Olvidar la vinculación de este dispositivo? Necesitarás Hive Keychain para volver a vincularte, y será una identidad nueva, no la misma que antes (no se pierde nada del lado de Hive, solo la conexión de este navegador con ella)."
   },
   "theme": {
     "switchToDark": "cambiar a tema oscuro",
@@ -61,7 +63,7 @@
       },
       {
         "heading": "$ vinculacion",
-        "body": "Vincularte firma una sola vez un mensaje corto con tu clave posting de Hive, demostrando que controlas esa cuenta. Nunca vemos ni guardamos tu clave privada, solo esa firma. Cada navegador/dispositivo tiene su propia vinculación por separado — la misma cuenta de Hive puede vincularse desde varios dispositivos a la vez."
+        "body": "Vincularte firma una sola vez un mensaje corto con tu clave posting de Hive, demostrando que controlas esa cuenta. Nunca vemos ni guardamos tu clave privada, solo esa firma. Cada navegador/dispositivo tiene su propia vinculación por separado — la misma cuenta de Hive puede vincularse desde varios dispositivos a la vez. El botón \"cerrar sesión\" olvida la vinculación de este dispositivo; todavía no hay exportar/importar, así que es un camino sin vuelta — volver a vincularte en este navegador crea una vinculación nueva y separada, no recupera la anterior."
       },
       {
         "heading": "$ salas",

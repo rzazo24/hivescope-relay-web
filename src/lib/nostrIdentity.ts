@@ -26,3 +26,14 @@ export function getOrCreateIdentity(): NostrIdentity {
 
   return { secretKey, publicKey: getPublicKey(secretKey) }
 }
+
+/**
+ * Olvida la identidad Nostr de este navegador. No hay export/import de
+ * nsec todavía, así que esto es irreversible: la próxima vez que se llame a
+ * getOrCreateIdentity() se genera un pubkey nuevo, sin ninguna relación con
+ * el anterior más que poder volver a vincularse a la misma cuenta Hive
+ * (hivescope-relay permite varios pubkeys por cuenta Hive).
+ */
+export function clearIdentity() {
+  localStorage.removeItem(STORAGE_KEY)
+}

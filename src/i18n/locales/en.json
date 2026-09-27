@@ -13,7 +13,9 @@
     "keychainFound": "[ok] hive_keychain detected",
     "keychainNotFound": "[!] hive_keychain not detected yet — if you have the extension or app installed, try anyway, it sometimes takes a moment to inject itself",
     "submitting": "> signing…",
-    "submit": "> link with hive keychain"
+    "submit": "> link with hive keychain",
+    "logout": "logout",
+    "logoutConfirm": "Forget this device's link? You'll need Hive Keychain to re-link, and it'll be a new identity — not the same one as before (nothing is lost on the Hive side, just this browser's connection to it)."
   },
   "theme": {
     "switchToDark": "switch to dark theme",
@@ -61,7 +63,7 @@
       },
       {
         "heading": "$ linking",
-        "body": "Linking signs a short message once with your Hive posting key, proving you control that account. We never see or store your private key, only that one signature. Each browser/device gets its own separate link — the same Hive account can be linked from several devices at once."
+        "body": "Linking signs a short message once with your Hive posting key, proving you control that account. We never see or store your private key, only that one signature. Each browser/device gets its own separate link — the same Hive account can be linked from several devices at once. The \"logout\" button forgets this device's link; there's no export/import yet, so logging out is one-way — linking again on this browser creates a new, separate link, not a return to the old one."
       },
       {
         "heading": "$ rooms",

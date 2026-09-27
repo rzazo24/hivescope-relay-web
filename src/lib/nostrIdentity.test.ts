@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { getOrCreateIdentity } from './nostrIdentity'
+import { clearIdentity, getOrCreateIdentity } from './nostrIdentity'
 
 afterEach(() => {
   localStorage.clear()
@@ -34,5 +34,15 @@ describe('getOrCreateIdentity', () => {
     const second = getOrCreateIdentity()
 
     expect(second.publicKey).not.toBe(first.publicKey)
+  })
+})
+
+describe('clearIdentity', () => {
+  it('makes the next getOrCreateIdentity() call generate a new, different identity (this is the "logout" button)', () => {
+    const before = getOrCreateIdentity()
+    clearIdentity()
+    const after = getOrCreateIdentity()
+
+    expect(after.publicKey).not.toBe(before.publicKey)
   })
 })
