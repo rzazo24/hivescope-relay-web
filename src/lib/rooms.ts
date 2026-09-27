@@ -45,6 +45,8 @@ export interface Room {
   ownerPubkey: string
   createdAt: number
   id: string
+  /** Unix seconds (NIP-40 "expiration" tag), o 0 si el evento no trae uno válido (no debería pasar para salas creadas después de que este tag se hizo obligatorio, pero datos viejos o malformados podrían no tenerlo). */
+  expiresAt: number
 }
 
 /** Exportada para poder probarla directamente: es la parte con más casos borde de listRooms. */
@@ -62,7 +64,38 @@ export function parseRoomEvent(event: {
   const admin = event.tags.find((t) => t[0] === 'admin')?.[1]
   if (!slug || !name || !admin) return null
 
-  return { slug, name, admin, ownerPubkey: event.pubkey, createdAt: event.created_at ?? 0, id: event.id ?? '' }
+  const expirationTag = event.tags.find((t) => t[0] === 'expiration')?.[1]
+  const expiresAt = Number(expirationTag)
+
+  return {
+    slug,
+    name,
+    admin,
+    ownerPubkey: event.pubkey,
+    createdAt: event.created_at ?? 0,
+    id: event.id ?? '',
+    expiresAt: Number.isFinite(expiresAt) ? expiresAt : 0,
+  }
+}
+
+/**
+ * Formatea cuánto le queda a una sala antes de expirar, redondeado a la
+ * unidad más grande que tenga sentido ("3d", "5h", "12m") -- no es un
+ * contador en vivo, solo una foto de lo que falta al momento de pedir la
+ * lista de salas. Exportada para poder probarla directamente.
+ */
+export function formatTimeRemaining(expiresAt: number, now: number = Math.floor(Date.now() / 1000)): string | null {
+  if (expiresAt <= 0) return null // sin dato de expiración (sala vieja, o evento malformado)
+
+  const secondsLeft = expiresAt - now
+  if (secondsLeft <= 0) return null // ya debería haber sido borrada; no mostrar un dato engañoso
+
+  const days = Math.floor(secondsLeft / 86400)
+  if (days >= 1) return `${days}d`
+  const hours = Math.floor(secondsLeft / 3600)
+  if (hours >= 1) return `${hours}h`
+  const minutes = Math.max(1, Math.floor(secondsLeft / 60))
+  return `${minutes}m`
 }
 
 /**

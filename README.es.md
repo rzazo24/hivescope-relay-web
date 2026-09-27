@@ -84,7 +84,8 @@ actualizaciones (las opciones cortas son orientativas: la limpieza corre
 más o menos cada hora, así que una sala de 1h puede sobrevivir hasta una
 hora más de lo marcado). Renombrar una sala, o cualquier otra edición,
 reinicia el plazo con la duración que se elija en ese momento; no hay un botón de
-"renovar" aparte, con editarla alcanza.
+"renovar" aparte, con editarla alcanza. Cada sala del listado muestra cuánto
+le queda.
 
 ## La vinculación Hive↔Nostr, resumida
 

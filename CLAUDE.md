@@ -118,15 +118,27 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    create form and `RoomRow`'s edit form show a `LifetimeSelector`
    (1h/24h/7d/30d/90d toggle, same visual pattern as `ThemeSwitcher`) so
    whoever creates or edits a room picks the duration each time — the edit
-   form's picker always resets to the 30-day default rather than reading
-   the room's current remaining time
-   (nothing in `Room` tracks `expiration` client-side; deliberately not
-   scope-creeping into a "time remaining" display, only the ask was to
-   make the duration choosable). Because *any* room-meta publish — create,
-   rename, delegate admin, or even resubmitting unchanged via "edit" —
-   stamps a fresh expiration, "renewing" a room (with whatever duration is
-   picked at that moment) is just editing it; there's no dedicated renew
-   action in this UI and none is needed.
+   form's picker always resets to the 30-day default, it does not
+   pre-select whatever the room's current duration happens to be (there's
+   no way to recover the *original* duration someone picked from a NIP-33
+   replaceable event, only the absolute `expiresAt` timestamp the last
+   publish happened to compute — so there's nothing meaningful to
+   pre-select from). Because *any* room-meta publish — create, rename,
+   delegate admin, or even resubmitting unchanged via "edit" — stamps a
+   fresh expiration, "renewing" a room (with whatever duration is picked
+   at that moment) is just editing it; there's no dedicated renew action
+   in this UI and none is needed.
+
+   `Room.expiresAt` (parsed from the `expiration` tag by `parseRoomEvent`,
+   0 if missing/malformed — old rooms created before this tag existed
+   won't have one) and `formatTimeRemaining(expiresAt, now?)` (rounds down
+   to the largest sensible unit — "3d", "5h", "12m" — floors at "1m"
+   rather than showing "0m", returns `null` once past the deadline instead
+   of a misleading negative) back the "expires in: Xd" shown next to a
+   room's admin line and, in the edit form, above the `LifetimeSelector` as
+   "currently expires in: Xd" so it's clear that line is status, not the
+   picker. This is a point-in-time read from whenever `listRooms()` last
+   ran, not a live ticking countdown — no interval/timer involved.
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with

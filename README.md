@@ -82,7 +82,8 @@ with no updates (the short options are best-effort: cleanup runs roughly
 hourly, so a 1h room may outlive its mark by up to an hour). Renaming a
 room, or any other edit, resets the clock with
 whatever duration you pick at that moment; there's no separate "renew"
-button, editing is enough.
+button, editing is enough. Each room in the list shows how long it has
+left.
 
 ## The Hive↔Nostr link, in short
 

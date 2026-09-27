@@ -4,7 +4,7 @@ import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import { SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
-import { DEFAULT_ROOM_LIFETIME_SECONDS, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
+import { DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
 
 function shortPubkey(pubkey: string) {
@@ -63,6 +63,7 @@ function RoomRow({
   const [lifetimeSeconds, setLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const timeRemaining = formatTimeRemaining(room.expiresAt)
 
   const startEdit = () => {
     setName(room.name)
@@ -95,6 +96,11 @@ function RoomRow({
             disabled={saving}
             className="min-w-0 rounded-md border border-border bg-base px-3 py-2 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
           />
+          {timeRemaining && (
+            <p className="text-xs text-muted">
+              {t('rooms.currentlyExpiresIn')} {timeRemaining}
+            </p>
+          )}
           <LifetimeSelector value={lifetimeSeconds} onChange={setLifetimeSeconds} disabled={saving} />
           <div className="flex gap-2">
             <button
@@ -126,7 +132,10 @@ function RoomRow({
           <span className="text-muted">&gt; </span>
           {room.name}
         </span>
-        <span className="text-xs text-muted">{adminLabel}</span>
+        <span className="text-xs text-muted">
+          {adminLabel}
+          {timeRemaining && ` · ${t('rooms.lifetimePrompt')} ${timeRemaining}`}
+        </span>
       </button>
       {canManage && (
         <button

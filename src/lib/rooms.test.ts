@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
+import { formatTimeRemaining, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -31,6 +31,7 @@ describe('parseRoomEvent', () => {
         ['d', `${ROOM_D_PREFIX}general`],
         ['name', 'General'],
         ['admin', validAdmin],
+        ['expiration', '1700086400'],
       ],
     })
 
@@ -41,6 +42,7 @@ describe('parseRoomEvent', () => {
       ownerPubkey: 'owner-pubkey',
       createdAt: 1700000000,
       id: 'event-id',
+      expiresAt: 1700086400,
     })
   })
 
@@ -61,7 +63,31 @@ describe('parseRoomEvent', () => {
       ownerPubkey: 'owner-pubkey',
       createdAt: 0,
       id: '',
+      expiresAt: 0,
     })
+  })
+
+  it('defaults expiresAt to 0 when the "expiration" tag is missing or not a number', () => {
+    const withoutTag = parseRoomEvent({
+      pubkey: 'owner-pubkey',
+      tags: [
+        ['d', `${ROOM_D_PREFIX}general`],
+        ['name', 'General'],
+        ['admin', validAdmin],
+      ],
+    })
+    expect(withoutTag?.expiresAt).toBe(0)
+
+    const malformed = parseRoomEvent({
+      pubkey: 'owner-pubkey',
+      tags: [
+        ['d', `${ROOM_D_PREFIX}general`],
+        ['name', 'General'],
+        ['admin', validAdmin],
+        ['expiration', 'not-a-number'],
+      ],
+    })
+    expect(malformed?.expiresAt).toBe(0)
   })
 
   it('returns null for events whose "d" is not a room (e.g. hive-link)', () => {
@@ -112,7 +138,15 @@ describe('parseRoomEvent', () => {
 })
 
 describe('isNewerRoom', () => {
-  const base: Room = { slug: 'general', name: 'General', admin: '1'.repeat(64), ownerPubkey: 'a', createdAt: 100, id: 'aa' }
+  const base: Room = {
+    slug: 'general',
+    name: 'General',
+    admin: '1'.repeat(64),
+    ownerPubkey: 'a',
+    createdAt: 100,
+    id: 'aa',
+    expiresAt: 0,
+  }
 
   it('prefers the higher createdAt', () => {
     const newer: Room = { ...base, createdAt: 200, id: 'aa' }
@@ -124,5 +158,33 @@ describe('isNewerRoom', () => {
     const higherId: Room = { ...base, id: 'zz' }
     expect(isNewerRoom(higherId, base)).toBe(true)
     expect(isNewerRoom(base, higherId)).toBe(false)
+  })
+})
+
+describe('formatTimeRemaining', () => {
+  const now = 1700000000
+
+  it('rounds down to whole days when a day or more remains', () => {
+    expect(formatTimeRemaining(now + 3 * 86400 + 1000, now)).toBe('3d')
+  })
+
+  it('rounds down to whole hours when less than a day but an hour or more remains', () => {
+    expect(formatTimeRemaining(now + 5 * 3600 + 100, now)).toBe('5h')
+  })
+
+  it('rounds down to whole minutes when less than an hour remains', () => {
+    expect(formatTimeRemaining(now + 12 * 60 + 30, now)).toBe('12m')
+  })
+
+  it('floors at 1m instead of showing 0m for anything still in the future', () => {
+    expect(formatTimeRemaining(now + 10, now)).toBe('1m')
+  })
+
+  it('returns null once the deadline has passed (should already be deleted, not shown as a misleading negative)', () => {
+    expect(formatTimeRemaining(now - 1, now)).toBeNull()
+  })
+
+  it('returns null when there is no expiration data (expiresAt <= 0)', () => {
+    expect(formatTimeRemaining(0, now)).toBeNull()
   })
 })
