@@ -1,7 +1,8 @@
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ChatRoom } from '../chat/ChatRoom'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
-import { slugifyRoom } from '../../lib/rooms'
+import { slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
 
 function shortPubkey(pubkey: string) {
@@ -11,19 +12,11 @@ function shortPubkey(pubkey: string) {
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
   const { rooms, error, creating, createError, create } = useRooms()
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
 
-  if (selectedSlug) {
-    return (
-      <div className="text-sm">
-        <button type="button" onClick={() => setSelectedSlug(null)} className="text-xs text-muted hover:text-ink">
-          {t('rooms.back')}
-        </button>
-        <p className="mt-3 text-ink">{t('rooms.enteredTitle', { slug: selectedSlug })}</p>
-        <p className="mt-1 text-muted">{t('rooms.enteredBody')}</p>
-      </div>
-    )
+  if (selectedRoom) {
+    return <ChatRoom room={selectedRoom} identity={identity} onBack={() => setSelectedRoom(null)} />
   }
 
   const handleCreate = async (e: FormEvent) => {
@@ -49,7 +42,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
               <li key={`${room.ownerPubkey}:${room.slug}`}>
                 <button
                   type="button"
-                  onClick={() => setSelectedSlug(room.slug)}
+                  onClick={() => setSelectedRoom(room)}
                   className="flex w-full items-center justify-between gap-3 bg-code px-3 py-2.5 text-left transition hover:bg-surface-2"
                 >
                   <span className="text-ink">

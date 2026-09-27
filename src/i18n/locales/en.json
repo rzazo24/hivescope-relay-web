@@ -26,7 +26,14 @@
     "creating": "> creating…",
     "adminPrefix": "admin:",
     "back": "< cd ..",
-    "enteredTitle": "$ cd {{slug}}",
-    "enteredBody": "// chat view coming soon"
+    "enteredTitle": "$ cd {{slug}}"
+  },
+  "chat": {
+    "connecting": "$ connecting…",
+    "empty": "// no messages yet — say something",
+    "you": "you",
+    "placeholder": "type a message…",
+    "send": "> send",
+    "sending": "> sending…"
   }
 }
