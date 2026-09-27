@@ -74,7 +74,7 @@
       },
       {
         "heading": "$ expiration",
-        "body": "Whoever creates or edits a room picks how long it lasts (7, 30, or 90 days) — once that time passes with no updates, the room and its messages are removed. Renaming it, or any other edit, resets the clock from that moment with whatever duration you pick then — there's no separate \"renew\" action, editing is enough."
+        "body": "Whoever creates or edits a room picks how long it lasts (1 hour, 24 hours, 7, 30, or 90 days) — once that time passes with no updates, the room and its messages are removed (the 1h/24h options are best-effort, cleanup checks run about once an hour so a short-lived room may stick around up to an hour past its mark). Renaming it, or any other edit, resets the clock from that moment with whatever duration you pick then — there's no separate \"renew\" action, editing is enough."
       },
       {
         "heading": "$ theme",

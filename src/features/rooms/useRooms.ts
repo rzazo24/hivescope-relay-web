@@ -22,11 +22,11 @@ export function useRooms() {
   const [createError, setCreateError] = useState<string | null>(null)
 
   const create = useCallback(
-    async (slug: string, name: string, adminPubkey: string, secretKey: Uint8Array, lifetimeDays: number) => {
+    async (slug: string, name: string, adminPubkey: string, secretKey: Uint8Array, lifetimeSeconds: number) => {
       setCreating(true)
       setCreateError(null)
       try {
-        await createRoom(slug, name, adminPubkey, secretKey, lifetimeDays)
+        await createRoom(slug, name, adminPubkey, secretKey, lifetimeSeconds)
         refresh()
         return true
       } catch (err) {
@@ -44,11 +44,11 @@ export function useRooms() {
 
   /** Igual que create, pero con estado propio para no pisar el del formulario de alta de sala. */
   const update = useCallback(
-    async (slug: string, name: string, adminPubkey: string, secretKey: Uint8Array, lifetimeDays: number) => {
+    async (slug: string, name: string, adminPubkey: string, secretKey: Uint8Array, lifetimeSeconds: number) => {
       setUpdating(true)
       setUpdateError(null)
       try {
-        await createRoom(slug, name, adminPubkey, secretKey, lifetimeDays)
+        await createRoom(slug, name, adminPubkey, secretKey, lifetimeSeconds)
         refresh()
         return true
       } catch (err) {

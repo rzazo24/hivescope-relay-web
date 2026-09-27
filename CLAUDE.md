@@ -104,17 +104,22 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    relay will still reject — there's no runtime check that they agree,
    they're just two independently-configured constants in two repos.
 
-   `ROOM_LIFETIME_OPTIONS_DAYS` (`rooms.ts`, `[7, 30, 90]`, default 30) —
-   `createRoom(slug, name, adminPubkey, secretKey, lifetimeDays)` stamps
-   every room-metadata publish with an `expiration` tag (NIP-40) of
-   `now + lifetimeDays`. The relay requires this tag and khatru
-   auto-deletes the event once it passes; a separate relay-side sweep then
-   deletes that room's chat messages too (see hivescope-relay's
-   `internal/roomsweep`). Both `RoomList`'s create form and `RoomRow`'s
-   edit form show a `LifetimeSelector` (7d/30d/90d toggle, same visual
-   pattern as `ThemeSwitcher`) so whoever creates or edits a room picks the
-   duration each time — the edit form's picker always resets to the
-   30-day default rather than reading the room's current remaining time
+   `ROOM_LIFETIME_OPTIONS` (`rooms.ts`, `{label, seconds}` pairs — 1h, 24h,
+   7d, 30d, 90d — default 30d) — `createRoom(slug, name, adminPubkey,
+   secretKey, lifetimeSeconds)` stamps every room-metadata publish with an
+   `expiration` tag (NIP-40) of `now + lifetimeSeconds`. The relay requires
+   this tag and khatru auto-deletes the event once it passes; a separate
+   relay-side sweep then deletes that room's chat messages too (see
+   hivescope-relay's `internal/roomsweep`). Both cleanup mechanisms run
+   roughly hourly (khatru's own NIP-40 sweep interval isn't configurable),
+   so the 1h/24h options are best-effort — a 1h room can realistically
+   take up to ~2h to actually vanish (up to an hour past its own mark, then
+   however long until the *next* sweep tick after that). Both `RoomList`'s
+   create form and `RoomRow`'s edit form show a `LifetimeSelector`
+   (1h/24h/7d/30d/90d toggle, same visual pattern as `ThemeSwitcher`) so
+   whoever creates or edits a room picks the duration each time — the edit
+   form's picker always resets to the 30-day default rather than reading
+   the room's current remaining time
    (nothing in `Room` tracks `expiration` client-side; deliberately not
    scope-creeping into a "time remaining" display, only the ask was to
    make the duration choosable). Because *any* room-meta publish — create,

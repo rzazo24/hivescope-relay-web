@@ -6,16 +6,28 @@ export const ROOM_D_PREFIX = 'room:'
 export const ROOM_META_KIND = 30078
 
 /**
- * Duraciones disponibles para una sala antes de expirar (NIP-40), en días
- * -- quien la crea o edita elige una de estas cada vez que publica sus
- * metadatos (crear, renombrar, delegar admin, o simplemente volver a
- * guardarla sin cambios), lo que también la "renueva" desde ese momento --
- * ver NewRoomMetaPolicy/internal/roomsweep en hivescope-relay para el
- * porqué (khatru borra la sala sola al expirar; un barrido propio del
- * relé borra además sus mensajes una vez que la sala ya no existe).
+ * Duraciones disponibles para una sala antes de expirar (NIP-40) -- quien
+ * la crea o edita elige una de estas cada vez que publica sus metadatos
+ * (crear, renombrar, delegar admin, o simplemente volver a guardarla sin
+ * cambios), lo que también la "renueva" desde ese momento -- ver
+ * NewRoomMetaPolicy/internal/roomsweep en hivescope-relay para el porqué
+ * (khatru borra la sala sola al expirar; un barrido propio del relé borra
+ * además sus mensajes una vez que la sala ya no existe).
+ *
+ * Las duraciones cortas (1h/24h) son "mejor esfuerzo", no exactas: tanto el
+ * barrido NIP-40 interno de khatru como internal/roomsweep corren cada
+ * hora, así que una sala de 1h puede tardar hasta casi una hora extra en
+ * desaparecer de verdad -- ver el comentario correspondiente en
+ * internal/roomsweep del lado del relé.
  */
-export const ROOM_LIFETIME_OPTIONS_DAYS = [7, 30, 90] as const
-export const DEFAULT_ROOM_LIFETIME_DAYS: (typeof ROOM_LIFETIME_OPTIONS_DAYS)[number] = 30
+export const ROOM_LIFETIME_OPTIONS = [
+  { label: '1h', seconds: 60 * 60 },
+  { label: '24h', seconds: 24 * 60 * 60 },
+  { label: '7d', seconds: 7 * 24 * 60 * 60 },
+  { label: '30d', seconds: 30 * 24 * 60 * 60 },
+  { label: '90d', seconds: 90 * 24 * 60 * 60 },
+] as const
+export const DEFAULT_ROOM_LIFETIME_SECONDS: (typeof ROOM_LIFETIME_OPTIONS)[number]['seconds'] = 30 * 24 * 60 * 60
 
 /** Normaliza un nombre de sala a un slug válido para el tag "d": minúsculas, sin espacios. */
 export function slugifyRoom(input: string): string {
@@ -104,7 +116,7 @@ export async function listRooms(): Promise<Room[]> {
  * dueña o su admin delegado. `adminPubkey` es explícito (en vez de siempre
  * derivarlo de `secretKey`) para poder editar una sala preservando su
  * `admin` actual sin reasignarlo silenciosamente a quien la está editando.
- * `lifetimeDays` fija la nueva fecha de caducidad (NIP-40) a partir de
+ * `lifetimeSeconds` fija la nueva fecha de caducidad (NIP-40) a partir de
  * ahora, sea sala nueva o una que ya existía.
  */
 export async function createRoom(
@@ -112,7 +124,7 @@ export async function createRoom(
   name: string,
   adminPubkey: string,
   secretKey: Uint8Array,
-  lifetimeDays: number = DEFAULT_ROOM_LIFETIME_DAYS,
+  lifetimeSeconds: number = DEFAULT_ROOM_LIFETIME_SECONDS,
 ) {
   const now = Math.floor(Date.now() / 1000)
 
@@ -124,7 +136,7 @@ export async function createRoom(
         ['d', `${ROOM_D_PREFIX}${slug}`],
         ['name', name],
         ['admin', adminPubkey],
-        ['expiration', String(now + lifetimeDays * 24 * 60 * 60)],
+        ['expiration', String(now + lifetimeSeconds)],
       ],
       content: '',
     },

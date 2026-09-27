@@ -4,7 +4,7 @@ import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import { SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
-import { DEFAULT_ROOM_LIFETIME_DAYS, ROOM_LIFETIME_OPTIONS_DAYS, slugifyRoom, type Room } from '../../lib/rooms'
+import { DEFAULT_ROOM_LIFETIME_SECONDS, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
 
 function shortPubkey(pubkey: string) {
@@ -17,27 +17,27 @@ function LifetimeSelector({
   disabled,
 }: {
   value: number
-  onChange: (days: number) => void
+  onChange: (seconds: number) => void
   disabled?: boolean
 }) {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-1 text-xs text-muted">
+    <div className="flex flex-wrap items-center gap-1 text-xs text-muted">
       <span>{t('rooms.lifetimePrompt')}</span>
-      {ROOM_LIFETIME_OPTIONS_DAYS.map((days) => (
+      {ROOM_LIFETIME_OPTIONS.map(({ label, seconds }) => (
         <button
-          key={days}
+          key={seconds}
           type="button"
           disabled={disabled}
-          onClick={() => onChange(days)}
-          aria-pressed={value === days}
+          onClick={() => onChange(seconds)}
+          aria-pressed={value === seconds}
           className={
-            value === days
+            value === seconds
               ? 'rounded bg-accent px-1.5 py-0.5 font-bold text-accent-ink'
               : 'rounded px-1.5 py-0.5 text-muted transition hover:text-ink disabled:opacity-60'
           }
         >
-          {days}d
+          {label}
         </button>
       ))}
     </div>
@@ -55,18 +55,18 @@ function RoomRow({
   canManage: boolean
   adminLabel: string
   onSelect: () => void
-  onSave: (name: string, lifetimeDays: number) => Promise<boolean>
+  onSave: (name: string, lifetimeSeconds: number) => Promise<boolean>
 }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(room.name)
-  const [lifetimeDays, setLifetimeDays] = useState<number>(DEFAULT_ROOM_LIFETIME_DAYS)
+  const [lifetimeSeconds, setLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const startEdit = () => {
     setName(room.name)
-    setLifetimeDays(DEFAULT_ROOM_LIFETIME_DAYS)
+    setLifetimeSeconds(DEFAULT_ROOM_LIFETIME_SECONDS)
     setSaveError(null)
     setEditing(true)
   }
@@ -77,7 +77,7 @@ function RoomRow({
     if (!trimmed) return
     setSaving(true)
     setSaveError(null)
-    const ok = await onSave(trimmed, lifetimeDays)
+    const ok = await onSave(trimmed, lifetimeSeconds)
     setSaving(false)
     if (ok) setEditing(false)
     else setSaveError(t('rooms.editError'))
@@ -95,7 +95,7 @@ function RoomRow({
             disabled={saving}
             className="min-w-0 rounded-md border border-border bg-base px-3 py-2 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
           />
-          <LifetimeSelector value={lifetimeDays} onChange={setLifetimeDays} disabled={saving} />
+          <LifetimeSelector value={lifetimeSeconds} onChange={setLifetimeSeconds} disabled={saving} />
           <div className="flex gap-2">
             <button
               type="submit"
@@ -148,7 +148,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const { rooms, error, creating, createError, create, update } = useRooms()
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
-  const [newRoomLifetimeDays, setNewRoomLifetimeDays] = useState<number>(DEFAULT_ROOM_LIFETIME_DAYS)
+  const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
   const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
   // Cosmético: el relé es quien de verdad decide si la edición se acepta
   // (ver NewRoomMetaPolicy/HIVESCOPE_SUPERADMIN_HIVE_ACCOUNT); esto solo
@@ -163,7 +163,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
     e.preventDefault()
     const slug = slugifyRoom(newRoomName)
     if (!slug) return
-    const ok = await create(slug, newRoomName.trim(), identity.publicKey, identity.secretKey, newRoomLifetimeDays)
+    const ok = await create(slug, newRoomName.trim(), identity.publicKey, identity.secretKey, newRoomLifetimeSeconds)
     if (ok) setNewRoomName('')
   }
 
@@ -190,7 +190,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   canManage={canManage}
                   adminLabel={adminLabel}
                   onSelect={() => setSelectedRoom(room)}
-                  onSave={(name, lifetimeDays) => update(room.slug, name, room.admin, identity.secretKey, lifetimeDays)}
+                  onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />
               )
             })}
@@ -221,7 +221,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
             {creating ? t('rooms.creating') : t('rooms.create')}
           </button>
         </div>
-        <LifetimeSelector value={newRoomLifetimeDays} onChange={setNewRoomLifetimeDays} disabled={creating} />
+        <LifetimeSelector value={newRoomLifetimeSeconds} onChange={setNewRoomLifetimeSeconds} disabled={creating} />
         {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {createError}</p>}
       </form>
     </div>
