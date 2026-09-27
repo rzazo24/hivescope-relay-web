@@ -15,7 +15,9 @@
     "submitting": "> signing…",
     "submit": "> link with hive keychain",
     "logout": "logout",
-    "logoutConfirm": "Forget this device's link? Your Hive account will still be @{{account}} — you'll just need to re-link it here with Hive Keychain, using a new Nostr keypair for this browser."
+    "logoutConfirm": "Forget this device's link? Your Hive account will still be @{{account}} — you'll just need to re-link it here with Hive Keychain, using a new Nostr keypair for this browser.",
+    "logoutConfirmButton": "> log out",
+    "logoutCancel": "cancel"
   },
   "theme": {
     "switchToDark": "switch to dark theme",

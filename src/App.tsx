@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmModal } from './components/ConfirmModal'
 import { HelpModal } from './components/HelpModal'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { TerminalWindow } from './components/TerminalWindow'
@@ -13,6 +14,7 @@ function App() {
   const { identity, keychainStatus, linkStatus, submitting, error, link, logout } = useHiveLink()
   const linked = linkStatus.state === 'linked'
   const [helpOpen, setHelpOpen] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   // La pantalla de vinculación es solo un formulario chico: no hace falta
   // que crezca mucho. Salas/chat sí se benefician de más ancho en pantallas
@@ -42,15 +44,23 @@ function App() {
           </div>
           <button
             type="button"
-            onClick={() => {
-              const account = linkStatus.state === 'linked' ? linkStatus.account : ''
-              if (window.confirm(t('link.logoutConfirm', { account }))) logout()
-            }}
+            onClick={() => setLogoutConfirmOpen(true)}
             className="text-xs text-muted underline decoration-dotted underline-offset-2 hover:text-error"
           >
             {t('link.logout')}
           </button>
         </div>
+      )}
+
+      {logoutConfirmOpen && (
+        <ConfirmModal
+          title={`$ ${t('link.logout')}`}
+          message={t('link.logoutConfirm', { account: linkStatus.state === 'linked' ? linkStatus.account : '' })}
+          confirmLabel={t('link.logoutConfirmButton')}
+          cancelLabel={t('link.logoutCancel')}
+          onConfirm={logout}
+          onCancel={() => setLogoutConfirmOpen(false)}
+        />
       )}
 
       <div className="flex items-start justify-between gap-3">
