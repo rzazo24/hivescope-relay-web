@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
+import { SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
@@ -112,6 +113,10 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
   const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
+  // Cosmético: el relé es quien de verdad decide si la edición se acepta
+  // (ver NewRoomMetaPolicy/HIVESCOPE_SUPERADMIN_HIVE_ACCOUNT); esto solo
+  // evita esconderle el botón "editar" al superadmin en salas ajenas.
+  const isSuperadmin = SUPERADMIN_HIVE_ACCOUNT !== '' && account.toLowerCase() === SUPERADMIN_HIVE_ACCOUNT.toLowerCase()
 
   if (selectedRoom) {
     return <ChatRoom room={selectedRoom} identity={identity} onBack={() => setSelectedRoom(null)} />
@@ -137,7 +142,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         {rooms && rooms.length > 0 && (
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-md border border-border">
             {rooms.map((room) => {
-              const canManage = identity.publicKey === room.ownerPubkey || identity.publicKey === room.admin
+              const canManage = identity.publicKey === room.ownerPubkey || identity.publicKey === room.admin || isSuperadmin
               const adminLabel = `${t('rooms.adminPrefix')} ${
                 adminNames.has(room.admin) ? `@${adminNames.get(room.admin)}` : shortPubkey(room.admin)
               }`

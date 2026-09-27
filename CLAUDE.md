@@ -92,6 +92,17 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    (`isNewerRoom`, same created_at/id tie-break as the relay's own
    `findRoomOwnership` in `roommeta.go`) — without this, a delegated room
    would render twice in the list.
+
+   `SUPERADMIN_HIVE_ACCOUNT` (`src/lib/config.ts`, `VITE_SUPERADMIN_HIVE_ACCOUNT`,
+   defaults to `'rzazo24'` same as the relay's own default) makes
+   `RoomRow`'s edit button also show for rooms that account doesn't own or
+   administer. This is **purely cosmetic** — the relay is the actual
+   authority (`HIVESCOPE_SUPERADMIN_HIVE_ACCOUNT`, matched by Hive account
+   name); this constant only stops the UI from hiding a button that would
+   have worked anyway. The two must name the same account or the button
+   either goes missing for a real superadmin or appears for someone the
+   relay will still reject — there's no runtime check that they agree,
+   they're just two independently-configured constants in two repos.
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with
