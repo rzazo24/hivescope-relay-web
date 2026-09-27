@@ -36,7 +36,7 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             {sections.map((section) => (
               <div key={section.heading}>
                 <p className="text-ink">{section.heading}</p>
-                <p className="mt-1 text-muted">{section.body}</p>
+                <p className="mt-1 text-justify text-muted">{section.body}</p>
               </div>
             ))}
 
