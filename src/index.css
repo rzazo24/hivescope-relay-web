@@ -1,74 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 /*
- * Tokens de diseño de HiveScope, en línea con las herramientas ya
- * publicadas en hivescope-relay (web/tools/hive-link-signer.html,
- * room-viewer.html): rojo Hive como acento, crema en claro / gris oscuro
- * en oscuro, Manrope para UI + JetBrains Mono para datos/código.
- *
- * @theme define los valores por defecto (tema claro) y genera las
- * utilidades de Tailwind (bg-accent, text-ink, font-mono, etc.); los
- * bloques de abajo redefinen las mismas variables para el tema oscuro, así
- * que esas utilidades siguen la cascada normal de CSS sin tener que
- * duplicar clases con prefijo dark:.
+ * Estética "hacker terminal": negro/verde neón, todo en monospace, ventanas
+ * de terminal con barra de título de tres puntos. Es un tema único,
+ * deliberadamente sin variante clara — un "terminal en modo claro" no
+ * encaja con la referencia que se pidió, así que no seguimos el patrón de
+ * prefers-color-scheme que usa el resto de hivescope-relay.
  */
 @theme {
-  --color-base: #faf8f5;
-  --color-surface: #ffffff;
-  --color-border: #e6e1d8;
-  --color-ink: #201d1a;
-  --color-muted: #6d675e;
-  --color-accent: #e31337;
-  --color-accent-ink: #ffffff;
-  --color-success: #147a4a;
-  --color-success-bg: #e7f5ee;
-  --color-error: #b3261e;
-  --color-error-bg: #fbeceb;
-  --color-code: #f3efe6;
+  --color-base: #060a08;
+  --color-surface: #0b140f;
+  --color-surface-2: #091009;
+  --color-border: #1c3d2a;
+  --color-ink: #4dffb0;
+  --color-muted: #4d8a6c;
+  --color-accent: #00ffa2;
+  --color-accent-ink: #04140c;
+  --color-success: #4dffb0;
+  --color-success-bg: #0f2e1c;
+  --color-error: #ff5c5c;
+  --color-error-bg: #2a0f0f;
+  --color-code: #081310;
 
-  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-sans: 'JetBrains Mono', ui-monospace, monospace;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* Tema oscuro por preferencia del sistema, salvo que se fuerce uno con data-theme */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --color-base: #16151a;
-    --color-surface: #1f1e24;
-    --color-border: #322f38;
-    --color-ink: #efece6;
-    --color-muted: #9d968c;
-    --color-accent: #ff4d6a;
-    --color-accent-ink: #16151a;
-    --color-success: #3ddc84;
-    --color-success-bg: #103023;
-    --color-error: #ff8a80;
-    --color-error-bg: #3a1c1a;
-    --color-code: #26242c;
-    color-scheme: dark;
-  }
-}
-
-/* Tema oscuro forzado explícitamente (para cuando haya selector de tema) */
-:root[data-theme='dark'] {
-  --color-base: #16151a;
-  --color-surface: #1f1e24;
-  --color-border: #322f38;
-  --color-ink: #efece6;
-  --color-muted: #9d968c;
-  --color-accent: #ff4d6a;
-  --color-accent-ink: #16151a;
-  --color-success: #3ddc84;
-  --color-success-bg: #103023;
-  --color-error: #ff8a80;
-  --color-error-bg: #3a1c1a;
-  --color-code: #26242c;
+:root {
   color-scheme: dark;
 }
 
 body {
   background: var(--color-base);
+  background-image: radial-gradient(ellipse at top, rgba(0, 255, 162, 0.06), transparent 60%);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink::after {
+  content: '_';
+  animation: blink 1s step-start infinite;
 }
