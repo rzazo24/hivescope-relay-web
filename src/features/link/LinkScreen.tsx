@@ -34,7 +34,7 @@ export function LinkScreen({ checking, keychainStatus, submitting, error, onLink
           id="account"
           type="text"
           value={account}
-          onChange={(e) => setAccount(e.target.value)}
+          onChange={(e) => setAccount(e.target.value.toLowerCase())}
           placeholder={t('link.accountPlaceholder')}
           autoComplete="off"
           spellCheck={false}
