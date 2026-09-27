@@ -103,6 +103,16 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    either goes missing for a real superadmin or appears for someone the
    relay will still reject — there's no runtime check that they agree,
    they're just two independently-configured constants in two repos.
+
+   `ROOM_LIFETIME_SECONDS` (`rooms.ts`, 30 days) — `createRoom()` stamps
+   every room-metadata publish with an `expiration` tag (NIP-40) of
+   `now + ROOM_LIFETIME_SECONDS`. The relay requires this tag and khatru
+   auto-deletes the event once it passes; a separate relay-side sweep then
+   deletes that room's chat messages too (see hivescope-relay's
+   `internal/roomsweep`). Because *any* room-meta publish — create, rename,
+   delegate admin, or even resubmitting unchanged via "edit" — stamps a
+   fresh expiration, "renewing" a room is just editing it; there's no
+   dedicated renew action in this UI and none is needed.
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with

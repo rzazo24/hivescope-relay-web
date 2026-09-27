@@ -72,6 +72,10 @@
         "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin, o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas."
       },
       {
+        "heading": "$ caducidad",
+        "body": "Una sala caduca a los 30 días sin actualizaciones, y sus mensajes se eliminan en cuanto lo hace. Renombrarla, o cualquier otra edición, la renueva por otros 30 días desde ese momento — no hay una acción de \"renovar\" aparte, con editarla alcanza."
+      },
+      {
         "heading": "$ tema",
         "body": "Oscuro (por defecto) o claro, cambiable en cualquier momento con el botón de sol/luna de la esquina — tu elección queda recordada en este dispositivo."
       },

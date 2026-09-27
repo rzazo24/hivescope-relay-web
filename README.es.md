@@ -74,6 +74,15 @@ privilegio reforzado de una sala — cualquier cuenta vinculada puede seguir
 escribiendo en cualquier sala; no hay capacidad de borrar mensajes ni de
 expulsar/silenciar cuentas.
 
+## Caducidad de salas
+
+Las salas no son permanentes: `createRoom()` marca cada publicación con una
+`expiration` NIP-40 a 30 días vista (`ROOM_LIFETIME_SECONDS` en
+`src/lib/rooms.ts`), y el relé borra sola la sala —y después sus
+mensajes— en cuanto pasa ese tiempo sin actualizaciones. Renombrar una
+sala, o cualquier otra edición, la renueva por otros 30 días; no hay un
+botón de "renovar" aparte, con editarla alcanza.
+
 ## La vinculación Hive↔Nostr, resumida
 
 Vincularse publica un evento `kind:30078` (`d=hive-link`) cuyo tag
