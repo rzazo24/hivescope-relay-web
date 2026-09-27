@@ -23,4 +23,13 @@ i18n
     },
   })
 
+// Mantiene <html lang="…"> en sync con el idioma real (detectado o elegido
+// a mano), para accesibilidad/SEO -- el atributo del HTML es estático, pero
+// el idioma efectivo puede cambiar en cualquier momento con el selector.
+const syncHtmlLang = () => {
+  document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language
+}
+i18n.on('languageChanged', syncHtmlLang)
+syncHtmlLang()
+
 export default i18n

@@ -1,32 +1,93 @@
-# React + TypeScript + Vite
+# hivescope-web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+[![CI](https://github.com/rzazo24/hivescope-relay-web/actions/workflows/ci.yml/badge.svg)](https://github.com/rzazo24/hivescope-relay-web/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+*[Leer en español](README.es.md)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Frontend for the HiveScope chat: link a [Hive](https://hive.io/) account
+with [Hive Keychain](https://hive-keychain.com/), browse/create rooms, and
+chat, all backed by
+[hivescope-relay](https://github.com/rzazo24/hivescope-relay).
 
-## React Compiler
+Live at **[chat.hivescope.xyz](https://chat.hivescope.xyz)**.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This is a pure client-side SPA — no backend of its own. It talks directly
+to the relay over `wss://` and to Hive Keychain (browser extension or
+mobile app) from the browser; there's nothing to run server-side beyond
+serving the static build.
 
-## Expanding the Oxlint configuration
+## Stack
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Vite + React + TypeScript + Tailwind v4 (`@theme` tokens, no config file),
+[nostr-tools](https://github.com/nbd-wtf/nostr-tools) for the Nostr side,
+[i18next](https://www.i18next.com/) for English/Spanish.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Running locally
+
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+By default it talks to the production relay (`wss://relay.hivescope.xyz`).
+To point it at a local `hivescope-relay` instance instead, copy
+`.env.example` to `.env.local` and set `VITE_RELAY_URL`.
+
+```bash
+npm run build   # tsc -b && vite build -> dist/
+npm run lint    # oxlint
+```
+
+## Project structure
+
+```
+src/lib/               framework-agnostic helpers: relay connection, Nostr
+                        identity (generated once per browser, kept in
+                        localStorage), Hive Keychain, room queries
+src/features/link/      the Hive Keychain linking screen
+src/features/rooms/     list/create rooms
+src/features/chat/      a room's live chat (kept-open subscription,
+                        auto-reconnect)
+src/components/         shared UI (TerminalWindow chrome, language switcher)
+src/i18n/               en/es strings and i18next setup
+```
+
+See [`CLAUDE.md`](CLAUDE.md) for how the pieces fit together (the linking
+flow, why identity lives in localStorage, how live messages and
+reconnection work).
+
+## The Hive↔Nostr link, in short
+
+Signing in publishes a `kind:30078` event (`d=hive-link`) whose `hive_sig`
+tag is the account's **posting** key signing the exact string
+`hivescope-relay-link:<nostr_pubkey>` — see
+[`src/lib/hiveKeychain.ts`](src/lib/hiveKeychain.ts) (`linkChallenge`).
+This has to match `LinkChallenge` in the relay's
+`internal/policies/hivelink.go` byte-for-byte; if you're touching either
+side, check the other.
+
+## i18n
+
+English and Spanish (Spain), detected from the browser on first visit,
+switchable any time (`$ lang en/es` in the corner) and remembered in
+localStorage. All UI strings go through `useTranslation()` from the
+start — see `src/i18n/locales/*.json`.
+
+Relay rejection reasons (shown as-is when something's invalid) are in
+English, matching NIP-01 convention for OK messages meant to be read by
+any Nostr client — they aren't re-translated client-side.
+
+## Deploying
+
+There's no Dockerfile here — the static build is served by the same Caddy
+instance [hivescope-relay](https://github.com/rzazo24/hivescope-relay)
+already runs on the VPS (only one process can bind to port 443). See that
+repo's `docker-compose.yml` / `Caddyfile` and README for the exact setup;
+in short, this repo is expected checked out as a sibling directory
+(`../hivescope-web` relative to `hivescope-relay`), and shipping a new
+build means `npm run build` here followed by recreating that `caddy`
+container.
+
+## License
+
+[MIT](LICENSE)
