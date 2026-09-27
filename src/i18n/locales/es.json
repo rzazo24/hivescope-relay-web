@@ -67,7 +67,7 @@
       },
       {
         "heading": "$ salas",
-        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala o la cuenta indicada como su admin pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas."
+        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin, o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas."
       },
       {
         "heading": "$ tema",
