@@ -29,12 +29,16 @@ function App() {
     <main
       className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:justify-center sm:py-8`}
     >
-      <div className="flex items-center gap-2 text-accent">
-        <span aria-hidden="true" className="font-bold">
-          &gt;_
-        </span>
-        <span className="text-sm font-bold tracking-wide">HiveScope</span>
-      </div>
+      {/* En la pantalla de vinculación la marca es el título grande (logo +
+          "HiveScope Chat"), así que no hace falta repetirla arriba también:
+          esa fila chica solo aparece una vez vinculado, cuando ya no hay
+          ningún h1 haciendo de marca en la pantalla. */}
+      {linked && (
+        <div className="flex items-center gap-2">
+          <img src="/favicon.svg" alt="" className="h-5 w-5 rounded" />
+          <span className="text-sm font-bold tracking-wide text-ink">HiveScope Chat</span>
+        </div>
+      )}
 
       <div className="flex items-start justify-between gap-3">
         <p className="cursor-blink text-xs text-muted">{linked ? t('rooms.prompt') : t('link.prompt')}</p>
@@ -54,9 +58,16 @@ function App() {
 
       {!linked && (
         <div>
-          <h1 className="text-2xl font-bold text-ink text-balance drop-shadow-[0_0_12px_rgba(0,255,162,0.35)]">
-            {t('link.title')}
-          </h1>
+          <div className="flex items-center gap-3">
+            <img
+              src="/favicon.svg"
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-md drop-shadow-[0_0_12px_rgba(0,255,162,0.35)]"
+            />
+            <h1 className="text-2xl font-bold text-ink text-balance drop-shadow-[0_0_12px_rgba(0,255,162,0.35)]">
+              {t('link.title')}
+            </h1>
+          </div>
           <p className="mt-2 text-sm text-muted">{t('link.subtitle')}</p>
         </div>
       )}

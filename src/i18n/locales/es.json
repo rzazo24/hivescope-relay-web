@@ -1,8 +1,8 @@
 {
   "link": {
     "prompt": "$ whoami --hive",
-    "title": "Vincula tu cuenta de Hive",
-    "subtitle": "// Firma con Hive Keychain para demostrar que controlas tu cuenta. Nunca compartimos ni vemos tu clave privada.",
+    "title": "HiveScope Chat",
+    "subtitle": "// Vincula tu cuenta de Hive con Hive Keychain para empezar. Nunca compartimos ni vemos tu clave privada.",
     "windowTitle": "hivescope@relay:~$",
     "accountLabel": "$ hive_account =",
     "accountPlaceholder": "tu-usuario",
