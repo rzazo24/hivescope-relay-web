@@ -26,7 +26,12 @@
     "creating": "> creando…",
     "adminPrefix": "admin:",
     "back": "< cd ..",
-    "enteredTitle": "$ cd {{slug}}"
+    "enteredTitle": "$ cd {{slug}}",
+    "edit": "editar",
+    "save": "guardar",
+    "saving": "guardando…",
+    "cancel": "cancelar",
+    "editError": "no se pudo guardar — puede que ya no seas el admin de esta sala"
   },
   "chat": {
     "connecting": "$ conectando…",
@@ -56,7 +61,7 @@
       },
       {
         "heading": "$ salas",
-        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado es el único que puede actualizar después sus datos. Cualquier cuenta vinculada puede escribir en cualquier sala — los nombres de sala no están reservados para que escriban personas concretas."
+        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala o la cuenta indicada como su admin pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas."
       },
       {
         "heading": "$ privacidad",

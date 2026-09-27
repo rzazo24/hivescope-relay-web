@@ -62,6 +62,16 @@ See [`CLAUDE.md`](CLAUDE.md) for how the pieces fit together (the linking
 flow, why identity lives in localStorage, how live messages and
 reconnection work).
 
+## Room admin
+
+Whoever creates a room becomes its owner, and rooms carry an `admin` pubkey
+tag; the owner or current admin can rename the room or hand off admin to
+another account (the "edit" link next to a room in the list, only shown
+when your linked identity is that room's owner or admin), enforced by the
+relay's `NewRoomMetaPolicy`. This is the room's only enforced privilege —
+anyone linked can still post in any room; there's no message-deletion or
+kick/ban capability.
+
 ## The Hive↔Nostr link, in short
 
 Signing in publishes a `kind:30078` event (`d=hive-link`) whose `hive_sig`

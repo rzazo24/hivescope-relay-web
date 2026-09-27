@@ -26,7 +26,12 @@
     "creating": "> creating…",
     "adminPrefix": "admin:",
     "back": "< cd ..",
-    "enteredTitle": "$ cd {{slug}}"
+    "enteredTitle": "$ cd {{slug}}",
+    "edit": "edit",
+    "save": "save",
+    "saving": "saving…",
+    "cancel": "cancel",
+    "editError": "couldn't save — you may no longer be this room's admin"
   },
   "chat": {
     "connecting": "$ connecting…",
@@ -56,7 +61,7 @@
       },
       {
         "heading": "$ rooms",
-        "body": "Any linked account can create a room; whoever creates a given name first is the only one who can update its details afterward. Any linked account can post in any room — room names aren't reserved for particular people to write in."
+        "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner or the account currently listed as its admin can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in."
       },
       {
         "heading": "$ privacy",

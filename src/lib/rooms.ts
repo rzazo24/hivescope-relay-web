@@ -1,4 +1,3 @@
-import { getPublicKey } from 'nostr-tools/pure'
 import { Relay } from 'nostr-tools/relay'
 import { RELAY_URL } from './config'
 import { publishEvent } from './relay'
@@ -20,10 +19,17 @@ export interface Room {
   name: string
   admin: string
   ownerPubkey: string
+  createdAt: number
+  id: string
 }
 
 /** Exportada para poder probarla directamente: es la parte con más casos borde de listRooms. */
-export function parseRoomEvent(event: { tags: string[][]; pubkey: string }): Room | null {
+export function parseRoomEvent(event: {
+  tags: string[][]
+  pubkey: string
+  created_at?: number
+  id?: string
+}): Room | null {
   const d = event.tags.find((t) => t[0] === 'd')?.[1]
   if (!d || !d.startsWith(ROOM_D_PREFIX)) return null
 
@@ -32,7 +38,17 @@ export function parseRoomEvent(event: { tags: string[][]; pubkey: string }): Roo
   const admin = event.tags.find((t) => t[0] === 'admin')?.[1]
   if (!slug || !name || !admin) return null
 
-  return { slug, name, admin, ownerPubkey: event.pubkey }
+  return { slug, name, admin, ownerPubkey: event.pubkey, createdAt: event.created_at ?? 0, id: event.id ?? '' }
+}
+
+/**
+ * Compara dos versiones de la misma sala con el mismo criterio de empate que
+ * usa el reemplazo NIP-33 del relé (eventstore/sqlite3.ReplaceEvent): mayor
+ * created_at gana, y en empate el id mayor. Exportada para poder probarla
+ * directamente, igual que parseRoomEvent.
+ */
+export function isNewerRoom(a: Room, b: Room): boolean {
+  return a.createdAt > b.createdAt || (a.createdAt === b.createdAt && a.id > b.id)
 }
 
 /**
@@ -40,21 +56,29 @@ export function parseRoomEvent(event: { tags: string[][]; pubkey: string }): Roo
  * Nostr) no soporta filtrar por prefijo de tag "d" en el propio filtro, así
  * que pedimos todos los kind:30078 (que también incluyen los eventos
  * hive-link de cada usuario) y filtramos acá qué "d" empieza con "room:".
+ *
+ * El reemplazo NIP-33 del relé es por (pubkey, kind, d): una vez que se
+ * delega la administración de una sala a otro pubkey, pueden quedar
+ * guardadas legítimamente dos filas con el mismo "d" (la del dueño anterior
+ * y la del admin delegado). Por eso acá se deduplica por slug quedándose
+ * con la fila más nueva, igual que hace el relé en `findRoomOwnership`.
  */
 export async function listRooms(): Promise<Room[]> {
   const relay = await Relay.connect(RELAY_URL)
   try {
     return await new Promise((resolve) => {
-      const rooms: Room[] = []
+      const bySlug = new Map<string, Room>()
 
       const sub = relay.subscribe([{ kinds: [ROOM_META_KIND], limit: 500 }], {
         onevent(event) {
           const room = parseRoomEvent(event)
-          if (room) rooms.push(room)
+          if (!room) return
+          const existing = bySlug.get(room.slug)
+          if (!existing || isNewerRoom(room, existing)) bySlug.set(room.slug, room)
         },
         oneose() {
           sub.close()
-          resolve(rooms)
+          resolve([...bySlug.values()])
         },
       })
     })
@@ -63,10 +87,13 @@ export async function listRooms(): Promise<Room[]> {
   }
 }
 
-/** Crea (o actualiza, si ya sos su dueño) una sala. */
-export async function createRoom(slug: string, name: string, secretKey: Uint8Array) {
-  const adminPubkey = getPublicKey(secretKey)
-
+/**
+ * Crea una sala nueva, o actualiza sus metadatos si quien firma ya es su
+ * dueña o su admin delegado. `adminPubkey` es explícito (en vez de siempre
+ * derivarlo de `secretKey`) para poder editar una sala preservando su
+ * `admin` actual sin reasignarlo silenciosamente a quien la está editando.
+ */
+export async function createRoom(slug: string, name: string, adminPubkey: string, secretKey: Uint8Array) {
   await publishEvent(
     {
       kind: ROOM_META_KIND,

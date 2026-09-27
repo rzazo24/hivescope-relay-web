@@ -73,8 +73,25 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    events and filters client-side for a `d` tag starting with `room:`.
    This isn't a shortcut: Nostr filters have no prefix-match on tag
    values, so there is no way to ask the relay for just rooms
-   server-side. `createRoom()` publishes a new `room:<slug>` event; the
-   relay enforces first-claim-wins ownership, this code doesn't.
+   server-side. `createRoom(slug, name, adminPubkey, secretKey)` publishes
+   a new/updated `room:<slug>` event; the relay enforces first-claim-wins
+   ownership and, after that, that only the room's owner or current admin
+   can keep publishing updates — this code doesn't re-check either, it
+   just surfaces the relay's rejection reason if the publish fails.
+   `adminPubkey` is a separate parameter from the signer (`secretKey`)
+   specifically so editing a room (`RoomList.tsx`'s `RoomRow`, shown only
+   when the signed-in identity is that room's `ownerPubkey` or `admin`)
+   can resubmit the *current* `admin` value unchanged instead of silently
+   reassigning it to whoever happens to be editing.
+
+   NIP-33 replacement is scoped to `(pubkey, kind, d)`, not just `(kind,
+   d)` — so once a room's admin is delegated to a different pubkey and
+   that pubkey publishes an update, the relay legitimately ends up storing
+   two rows for the same `d` (the previous owner's and the new admin's).
+   `listRooms()` dedupes these client-side by slug, keeping the newer one
+   (`isNewerRoom`, same created_at/id tie-break as the relay's own
+   `findRoomOwnership` in `roommeta.go`) — without this, a delegated room
+   would render twice in the list.
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with

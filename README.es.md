@@ -63,6 +63,17 @@ Ver [`CLAUDE.md`](CLAUDE.md) para cómo encajan las piezas (el flujo de
 vinculación, por qué la identidad vive en localStorage, cómo funcionan los
 mensajes en vivo y la reconexión).
 
+## Admin de sala
+
+Quien crea una sala pasa a ser su dueña, y las salas llevan un tag de pubkey
+`admin`; la dueña o el admin actual pueden renombrar la sala o delegar la
+administración en otra cuenta (el enlace "editar" junto a cada sala en el
+listado, que solo aparece cuando tu identidad vinculada es la dueña o el
+admin de esa sala), reforzado por `NewRoomMetaPolicy` del relé. Es el único
+privilegio reforzado de una sala — cualquier cuenta vinculada puede seguir
+escribiendo en cualquier sala; no hay capacidad de borrar mensajes ni de
+expulsar/silenciar cuentas.
+
 ## La vinculación Hive↔Nostr, resumida
 
 Vincularse publica un evento `kind:30078` (`d=hive-link`) cuyo tag

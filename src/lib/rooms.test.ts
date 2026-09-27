@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseRoomEvent, ROOM_D_PREFIX, slugifyRoom } from './rooms'
+import { isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -25,6 +25,8 @@ describe('parseRoomEvent', () => {
   it('parses a well-formed room event', () => {
     const room = parseRoomEvent({
       pubkey: 'owner-pubkey',
+      created_at: 1700000000,
+      id: 'event-id',
       tags: [
         ['d', `${ROOM_D_PREFIX}general`],
         ['name', 'General'],
@@ -37,6 +39,28 @@ describe('parseRoomEvent', () => {
       name: 'General',
       admin: validAdmin,
       ownerPubkey: 'owner-pubkey',
+      createdAt: 1700000000,
+      id: 'event-id',
+    })
+  })
+
+  it('defaults createdAt/id to 0/empty string when the event omits them', () => {
+    const room = parseRoomEvent({
+      pubkey: 'owner-pubkey',
+      tags: [
+        ['d', `${ROOM_D_PREFIX}general`],
+        ['name', 'General'],
+        ['admin', validAdmin],
+      ],
+    })
+
+    expect(room).toEqual({
+      slug: 'general',
+      name: 'General',
+      admin: validAdmin,
+      ownerPubkey: 'owner-pubkey',
+      createdAt: 0,
+      id: '',
     })
   })
 
@@ -84,5 +108,21 @@ describe('parseRoomEvent', () => {
       ],
     })
     expect(room).toBeNull()
+  })
+})
+
+describe('isNewerRoom', () => {
+  const base: Room = { slug: 'general', name: 'General', admin: '1'.repeat(64), ownerPubkey: 'a', createdAt: 100, id: 'aa' }
+
+  it('prefers the higher createdAt', () => {
+    const newer: Room = { ...base, createdAt: 200, id: 'aa' }
+    expect(isNewerRoom(newer, base)).toBe(true)
+    expect(isNewerRoom(base, newer)).toBe(false)
+  })
+
+  it('breaks a createdAt tie with the higher id, matching the relay backend', () => {
+    const higherId: Room = { ...base, id: 'zz' }
+    expect(isNewerRoom(higherId, base)).toBe(true)
+    expect(isNewerRoom(base, higherId)).toBe(false)
   })
 })
