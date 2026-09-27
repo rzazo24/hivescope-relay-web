@@ -20,7 +20,7 @@
     "switchToLight": "cambiar a tema claro"
   },
   "rooms": {
-    "prompt": "$ ls rooms/",
+    "prompt": "$ ls salas/",
     "linkedAs": "vinculado como @{{account}}",
     "loading": "$ cargando salas…",
     "empty": "// todavía no hay salas — crea la primera abajo",
