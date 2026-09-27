@@ -46,11 +46,11 @@ export function ChatRoom({
   return (
     <div className="flex flex-col gap-3 text-sm">
       <div className="flex items-baseline justify-between gap-3">
-        <button type="button" onClick={onBack} className="text-xs text-muted hover:text-ink">
+        <button type="button" onClick={onBack} className="shrink-0 text-xs text-muted hover:text-ink">
           {t('rooms.back')}
         </button>
-        <div className="flex items-center gap-1.5 text-xs text-muted">
-          <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted">
+          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
           <span className="truncate">{room.name}</span>
         </div>
       </div>
@@ -61,7 +61,10 @@ export function ChatRoom({
         <p className="text-xs text-error">{t('chat.reconnecting')}</p>
       )}
 
-      <div ref={listRef} className="flex h-72 flex-col gap-2 overflow-y-auto rounded-md border border-border bg-code p-3">
+      <div
+        ref={listRef}
+        className="flex h-[50vh] min-h-72 flex-col gap-2 overflow-y-auto rounded-md border border-border bg-code p-3 sm:h-[55vh] lg:h-[60vh]"
+      >
         {!connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.connecting')}</p>}
         {connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.empty')}</p>}
 
@@ -87,14 +90,16 @@ export function ChatRoom({
           placeholder={t('chat.placeholder')}
           autoComplete="off"
           disabled={!connected || sending}
-          className="w-full rounded-md border border-border bg-code px-3 py-2.5 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
+          className="min-w-0 flex-1 rounded-md border border-border bg-code px-3 py-2.5 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={!connected || sending || !draft.trim()}
-          className="shrink-0 rounded-md bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_0_20px_-4px_rgba(0,255,162,0.6)] transition disabled:opacity-40 disabled:shadow-none"
+          aria-label={sending ? t('chat.sending') : t('chat.send')}
+          title={sending ? t('chat.sending') : t('chat.send')}
+          className="shrink-0 rounded-md bg-accent px-3.5 py-2.5 text-sm font-bold text-accent-ink shadow-[0_0_20px_-4px_rgba(0,255,162,0.6)] transition disabled:opacity-40 disabled:shadow-none"
         >
-          {sending ? t('chat.sending') : t('chat.send')}
+          {sending ? '…' : '➤'}
         </button>
       </form>
 

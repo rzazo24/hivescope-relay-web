@@ -10,8 +10,15 @@ function App() {
   const { identity, keychainStatus, linkStatus, submitting, error, link } = useHiveLink()
   const linked = linkStatus.state === 'linked'
 
+  // La pantalla de vinculación es solo un formulario chico: no hace falta
+  // que crezca mucho. Salas/chat sí se benefician de más ancho en pantallas
+  // grandes (lista de salas, mensajes), así que su tope crece más.
+  const widthClass = linked
+    ? 'max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl'
+    : 'max-w-md sm:max-w-lg'
+
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col justify-center gap-4 px-4 py-8">
+    <main className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-center gap-4 px-4 py-8 transition-[max-width]`}>
       <div className="flex items-start justify-between gap-3">
         <p className="cursor-blink text-xs text-muted">{linked ? t('rooms.prompt') : t('link.prompt')}</p>
         <LanguageSwitcher />

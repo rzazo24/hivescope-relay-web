@@ -43,13 +43,13 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                 <button
                   type="button"
                   onClick={() => setSelectedRoom(room)}
-                  className="flex w-full items-center justify-between gap-3 bg-code px-3 py-2.5 text-left transition hover:bg-surface-2"
+                  className="flex w-full flex-col gap-0.5 bg-code px-3 py-2.5 text-left transition hover:bg-surface-2"
                 >
                   <span className="text-ink">
                     <span className="text-muted">&gt; </span>
                     {room.name}
                   </span>
-                  <span className="shrink-0 text-xs text-muted">
+                  <span className="text-xs text-muted">
                     {t('rooms.adminPrefix')} {shortPubkey(room.admin)}
                   </span>
                 </button>
@@ -63,7 +63,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         <label htmlFor="new-room" className="text-xs text-muted">
           {t('rooms.createPrompt')}
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <input
             id="new-room"
             type="text"
@@ -72,12 +72,12 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
             placeholder={t('rooms.namePlaceholder')}
             autoComplete="off"
             disabled={creating}
-            className="w-full rounded-md border border-border bg-code px-3 py-2.5 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
+            className="min-w-0 flex-1 rounded-md border border-border bg-code px-3 py-2.5 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={creating || !newRoomName.trim()}
-            className="shrink-0 rounded-md bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_0_20px_-4px_rgba(0,255,162,0.6)] transition disabled:opacity-40 disabled:shadow-none"
+            className="w-full shrink-0 rounded-md bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink shadow-[0_0_20px_-4px_rgba(0,255,162,0.6)] transition disabled:opacity-40 disabled:shadow-none sm:w-auto"
           >
             {creating ? t('rooms.creating') : t('rooms.create')}
           </button>
