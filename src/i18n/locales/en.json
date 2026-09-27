@@ -16,9 +16,8 @@
     "submit": "> link with hive keychain"
   },
   "theme": {
-    "prompt": "$ theme",
-    "dark": "dark",
-    "light": "light"
+    "switchToDark": "switch to dark theme",
+    "switchToLight": "switch to light theme"
   },
   "rooms": {
     "prompt": "$ ls rooms/",
@@ -48,7 +47,7 @@
     "sending": "> sending…"
   },
   "help": {
-    "trigger": "$ help",
+    "trigger": "help",
     "title": "man hivescope",
     "close": "close",
     "sections": [
@@ -70,7 +69,7 @@
       },
       {
         "heading": "$ theme",
-        "body": "Dark (the default) or light, switchable any time with the $ theme control in the corner — your choice is remembered on this device."
+        "body": "Dark (the default) or light, switchable any time with the sun/moon button in the corner — your choice is remembered on this device."
       },
       {
         "heading": "$ privacy",

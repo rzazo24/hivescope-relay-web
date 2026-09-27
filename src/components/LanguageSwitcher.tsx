@@ -10,8 +10,7 @@ export function LanguageSwitcher() {
   const current = i18n.resolvedLanguage ?? i18n.language
 
   return (
-    <div className="flex items-center gap-1 text-xs text-muted">
-      <span>$ lang</span>
+    <div className="flex items-center gap-1 text-xs text-muted" aria-label="language">
       {LANGS.map(({ code, label }) => (
         <button
           key={code}

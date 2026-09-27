@@ -16,9 +16,8 @@
     "submit": "> vincular con hive keychain"
   },
   "theme": {
-    "prompt": "$ tema",
-    "dark": "oscuro",
-    "light": "claro"
+    "switchToDark": "cambiar a tema oscuro",
+    "switchToLight": "cambiar a tema claro"
   },
   "rooms": {
     "prompt": "$ ls rooms/",
@@ -48,7 +47,7 @@
     "sending": "> enviando…"
   },
   "help": {
-    "trigger": "$ help",
+    "trigger": "ayuda",
     "title": "man hivescope",
     "close": "cerrar",
     "sections": [
@@ -70,7 +69,7 @@
       },
       {
         "heading": "$ tema",
-        "body": "Oscuro (por defecto) o claro, cambiable en cualquier momento con el control $ tema de la esquina — tu elección queda recordada en este dispositivo."
+        "body": "Oscuro (por defecto) o claro, cambiable en cualquier momento con el botón de sol/luna de la esquina — tu elección queda recordada en este dispositivo."
       },
       {
         "heading": "$ privacidad",
