@@ -1,0 +1,18 @@
+{
+  "link": {
+    "prompt": "$ whoami --hive",
+    "title": "Vincula tu cuenta de Hive",
+    "subtitle": "// Firma con Hive Keychain para demostrar que controlas tu cuenta. Nunca compartimos ni vemos tu clave privada.",
+    "windowTitle": "hivescope@relay:~$",
+    "accountLabel": "$ hive_account =",
+    "accountPlaceholder": "tu-usuario",
+    "checkingLink": "$ comprobando si ya existe una vinculación…",
+    "whoami": "$ whoami",
+    "linkedOk": "[ok] vinculación verificada por hivescope-relay",
+    "keychainChecking": "$ buscando hive_keychain…",
+    "keychainFound": "[ok] hive_keychain detectado",
+    "keychainNotFound": "[!] hive_keychain no detectado todavía — si tienes la extensión o la app instalada, prueba igual, a veces tarda un momento en inyectarse",
+    "submitting": "> firmando…",
+    "submit": "> vincular con hive keychain"
+  }
+}
