@@ -7,6 +7,11 @@ interface HelpSection {
   body: string
 }
 
+const REPO_LINKS = [
+  { key: 'relay', url: 'https://github.com/rzazo24/hivescope-relay' },
+  { key: 'web', url: 'https://github.com/rzazo24/hivescope-relay-web' },
+] as const
+
 export function HelpModal({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const sections = t('help.sections', { returnObjects: true }) as HelpSection[]
@@ -39,6 +44,23 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
                 <p className="mt-1 text-justify text-muted">{section.body}</p>
               </div>
             ))}
+
+            <div>
+              <p className="text-ink">{t('help.links.heading')}</p>
+              <div className="mt-1 flex flex-col gap-0.5">
+                {REPO_LINKS.map(({ key, url }) => (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted underline decoration-dotted underline-offset-2 hover:text-accent"
+                  >
+                    {t(`help.links.${key}`)}
+                  </a>
+                ))}
+              </div>
+            </div>
 
             <button
               type="button"

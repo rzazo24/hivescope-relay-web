@@ -83,6 +83,11 @@
         "heading": "$ privacidad",
         "body": "Los mensajes son públicos: son eventos Nostr que puede leer cualquiera que use un cliente Nostr, junto con el nombre de la sala y el pubkey de quien los envió. Esto no es mensajería privada ni cifrada — no publiques nada que no quieras que sea público."
       }
-    ]
+    ],
+    "links": {
+      "heading": "$ código fuente",
+      "relay": "hivescope-relay (backend)",
+      "web": "hivescope-web (frontend, esta app)"
+    }
   }
 }
