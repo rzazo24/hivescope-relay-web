@@ -35,7 +35,7 @@ export function ConfirmModal({
       <div role="alertdialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm">
         <TerminalWindow title={title}>
           <div className="flex flex-col gap-4 text-sm">
-            <p className="text-ink">{message}</p>
+            <p className="text-justify text-ink">{message}</p>
             <div className="flex gap-2">
               <button
                 type="button"
