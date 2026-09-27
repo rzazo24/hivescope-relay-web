@@ -22,7 +22,8 @@ export interface Room {
   ownerPubkey: string
 }
 
-function parseRoomEvent(event: { tags: string[][]; pubkey: string }): Room | null {
+/** Exportada para poder probarla directamente: es la parte con más casos borde de listRooms. */
+export function parseRoomEvent(event: { tags: string[][]; pubkey: string }): Room | null {
   const d = event.tags.find((t) => t[0] === 'd')?.[1]
   if (!d || !d.startsWith(ROOM_D_PREFIX)) return null
 

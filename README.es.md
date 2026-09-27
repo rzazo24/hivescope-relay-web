@@ -35,7 +35,13 @@ Para apuntarlo a una instancia local de `hivescope-relay`, copiá
 ```bash
 npm run build   # tsc -b && vite build -> dist/
 npm run lint    # oxlint
+npm test        # vitest run
 ```
+
+Los tests cubren la lógica pura (persistencia de identidad, parseo de slug
+de sala, el flujo de challenge/firma de Keychain, paridad de traducciones
+en/es) — lo que necesita una conexión real al relé se verifica a mano
+contra una instancia real de `hivescope-relay`, ver `CLAUDE.md`.
 
 ## Estructura del proyecto
 

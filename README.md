@@ -36,7 +36,13 @@ To point it at a local `hivescope-relay` instance instead, copy
 ```bash
 npm run build   # tsc -b && vite build -> dist/
 npm run lint    # oxlint
+npm test        # vitest run
 ```
+
+Tests cover pure logic (identity persistence, room slug parsing, the
+Keychain challenge/signing flow, en/es translation parity) — anything that
+needs a live relay connection is instead verified by hand against a real
+`hivescope-relay` instance, see `CLAUDE.md`.
 
 ## Project structure
 

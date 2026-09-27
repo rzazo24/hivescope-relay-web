@@ -24,13 +24,24 @@ npm install
 npm run dev              # dev server, defaults to wss://relay.hivescope.xyz
 npm run build             # tsc -b && vite build -> dist/
 npm run lint               # oxlint
+npm test                   # vitest run
 ```
 
-No test runner is set up. Verification for this project has so far meant
-running a real build against the real relay with Playwright (see recent
-commit messages for examples) rather than unit tests — the app is thin
-glue over `nostr-tools` and the relay's actual behavior, so most bugs only
-show up end-to-end anyway.
+Vitest (jsdom env, configured in `vite.config.ts`'s `test` block) covers the
+pure/deterministic logic: `src/lib/*.test.ts` (identity generation +
+persistence, `slugifyRoom`, `parseRoomEvent`'s edge cases, and a mocked
+`window.hive_keychain` for `waitForKeychain`/`requestHiveSignature`) and
+`src/i18n/locales.test.ts` (en/es key parity — this exists because
+untranslated strings have actually slipped through before). It does
+**not** cover anything that needs a live relay connection (`listRooms`,
+`createRoom`, the chat subscription, the actual linking flow) — that
+verification has so far meant running a real build against the real relay
+with Playwright instead (see recent commit messages for examples), because
+those paths are thin glue over `nostr-tools` and the relay's actual
+behavior, and mocking `nostr-tools/relay` convincingly would test the mock
+more than the app. Keep that split when adding tests: pure logic gets a
+Vitest unit test, anything relay-shaped gets exercised for real before
+calling a change done.
 
 ## Architecture
 
