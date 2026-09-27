@@ -29,6 +29,13 @@ function App() {
     <main
       className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:justify-center sm:py-8`}
     >
+      <div className="flex items-center gap-2 text-accent">
+        <span aria-hidden="true" className="font-bold">
+          &gt;_
+        </span>
+        <span className="text-sm font-bold tracking-wide">HiveScope</span>
+      </div>
+
       <div className="flex items-start justify-between gap-3">
         <p className="cursor-blink text-xs text-muted">{linked ? t('rooms.prompt') : t('link.prompt')}</p>
         <div className="flex items-center gap-3">
