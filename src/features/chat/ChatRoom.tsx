@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
 import { useChatRoom } from './useChatRoom'
@@ -25,6 +26,7 @@ export function ChatRoom({
   const { messages, connected, sending, error, send } = useChatRoom(room.slug, identity)
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
+  const senderNames = useHiveAccountNames(messages.map((m) => m.pubkey))
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
@@ -73,7 +75,9 @@ export function ChatRoom({
           return (
             <div key={msg.id}>
               <div className="flex items-baseline gap-2 text-[11px] text-muted">
-                <span>{isMe ? t('chat.you') : shortPubkey(msg.pubkey)}</span>
+                <span>
+                  {isMe ? t('chat.you') : senderNames.has(msg.pubkey) ? `@${senderNames.get(msg.pubkey)}` : shortPubkey(msg.pubkey)}
+                </span>
                 <span>{formatTime(msg.createdAt)}</span>
               </div>
               <p className={isMe ? 'text-accent' : 'text-ink'}>{msg.content}</p>

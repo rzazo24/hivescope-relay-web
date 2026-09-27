@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
+import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
@@ -14,6 +15,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const { rooms, error, creating, createError, create } = useRooms()
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
+  const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
 
   if (selectedRoom) {
     return <ChatRoom room={selectedRoom} identity={identity} onBack={() => setSelectedRoom(null)} />
@@ -50,7 +52,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                     {room.name}
                   </span>
                   <span className="text-xs text-muted">
-                    {t('rooms.adminPrefix')} {shortPubkey(room.admin)}
+                    {t('rooms.adminPrefix')} {adminNames.has(room.admin) ? `@${adminNames.get(room.admin)}` : shortPubkey(room.admin)}
                   </span>
                 </button>
               </li>
