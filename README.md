@@ -74,11 +74,13 @@ kick/ban capability.
 
 ## Room expiration
 
-Rooms aren't permanent: `createRoom()` stamps every publish with a NIP-40
-`expiration` 30 days out (`ROOM_LIFETIME_SECONDS` in `src/lib/rooms.ts`),
-and the relay auto-deletes the room — then its messages — once that time
-passes with no updates. Renaming a room, or any other edit, renews it for
-another 30 days; there's no separate "renew" button, editing is enough.
+Rooms aren't permanent: creating or editing one lets you pick how long it
+lasts (7, 30, or 90 days — `ROOM_LIFETIME_OPTIONS_DAYS` in
+`src/lib/rooms.ts`), stamped as a NIP-40 `expiration` on that publish. The
+relay auto-deletes the room — then its messages — once that time passes
+with no updates. Renaming a room, or any other edit, resets the clock with
+whatever duration you pick at that moment; there's no separate "renew"
+button, editing is enough.
 
 ## The Hive↔Nostr link, in short
 

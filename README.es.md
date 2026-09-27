@@ -76,12 +76,13 @@ expulsar/silenciar cuentas.
 
 ## Caducidad de salas
 
-Las salas no son permanentes: `createRoom()` marca cada publicación con una
-`expiration` NIP-40 a 30 días vista (`ROOM_LIFETIME_SECONDS` en
-`src/lib/rooms.ts`), y el relé borra sola la sala —y después sus
-mensajes— en cuanto pasa ese tiempo sin actualizaciones. Renombrar una
-sala, o cualquier otra edición, la renueva por otros 30 días; no hay un
-botón de "renovar" aparte, con editarla alcanza.
+Las salas no son permanentes: al crear o editar una se elige cuánto dura
+(7, 30 o 90 días — `ROOM_LIFETIME_OPTIONS_DAYS` en `src/lib/rooms.ts`),
+marcado como una `expiration` NIP-40 en esa publicación. El relé borra sola
+la sala —y después sus mensajes— en cuanto pasa ese tiempo sin
+actualizaciones. Renombrar una sala, o cualquier otra edición, reinicia el
+plazo con la duración que se elija en ese momento; no hay un botón de
+"renovar" aparte, con editarla alcanza.
 
 ## La vinculación Hive↔Nostr, resumida
 

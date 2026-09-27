@@ -6,15 +6,16 @@ export const ROOM_D_PREFIX = 'room:'
 export const ROOM_META_KIND = 30078
 
 /**
- * Cuánto vive una sala sin actividad antes de expirar (NIP-40), en
- * segundos: 30 días. Cualquier publicación de sus metadatos (crear,
- * renombrar, delegar admin, o simplemente volver a guardarla sin cambios)
- * la renueva por otros 30 días desde ese momento -- ver
- * NewRoomMetaPolicy/internal/roomsweep en hivescope-relay para el porqué
- * (khatru borra la sala sola al expirar; un barrido propio del relé borra
- * además sus mensajes una vez que la sala ya no existe).
+ * Duraciones disponibles para una sala antes de expirar (NIP-40), en días
+ * -- quien la crea o edita elige una de estas cada vez que publica sus
+ * metadatos (crear, renombrar, delegar admin, o simplemente volver a
+ * guardarla sin cambios), lo que también la "renueva" desde ese momento --
+ * ver NewRoomMetaPolicy/internal/roomsweep en hivescope-relay para el
+ * porqué (khatru borra la sala sola al expirar; un barrido propio del
+ * relé borra además sus mensajes una vez que la sala ya no existe).
  */
-export const ROOM_LIFETIME_SECONDS = 30 * 24 * 60 * 60
+export const ROOM_LIFETIME_OPTIONS_DAYS = [7, 30, 90] as const
+export const DEFAULT_ROOM_LIFETIME_DAYS: (typeof ROOM_LIFETIME_OPTIONS_DAYS)[number] = 30
 
 /** Normaliza un nombre de sala a un slug válido para el tag "d": minúsculas, sin espacios. */
 export function slugifyRoom(input: string): string {
@@ -103,8 +104,16 @@ export async function listRooms(): Promise<Room[]> {
  * dueña o su admin delegado. `adminPubkey` es explícito (en vez de siempre
  * derivarlo de `secretKey`) para poder editar una sala preservando su
  * `admin` actual sin reasignarlo silenciosamente a quien la está editando.
+ * `lifetimeDays` fija la nueva fecha de caducidad (NIP-40) a partir de
+ * ahora, sea sala nueva o una que ya existía.
  */
-export async function createRoom(slug: string, name: string, adminPubkey: string, secretKey: Uint8Array) {
+export async function createRoom(
+  slug: string,
+  name: string,
+  adminPubkey: string,
+  secretKey: Uint8Array,
+  lifetimeDays: number = DEFAULT_ROOM_LIFETIME_DAYS,
+) {
   const now = Math.floor(Date.now() / 1000)
 
   await publishEvent(
@@ -115,7 +124,7 @@ export async function createRoom(slug: string, name: string, adminPubkey: string
         ['d', `${ROOM_D_PREFIX}${slug}`],
         ['name', name],
         ['admin', adminPubkey],
-        ['expiration', String(now + ROOM_LIFETIME_SECONDS)],
+        ['expiration', String(now + lifetimeDays * 24 * 60 * 60)],
       ],
       content: '',
     },

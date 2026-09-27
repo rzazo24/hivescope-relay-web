@@ -39,7 +39,8 @@
     "save": "guardar",
     "saving": "guardando…",
     "cancel": "cancelar",
-    "editError": "no se pudo guardar — puede que ya no seas el admin de esta sala"
+    "editError": "no se pudo guardar — puede que ya no seas el admin de esta sala",
+    "lifetimePrompt": "caduca en:"
   },
   "chat": {
     "connecting": "$ conectando…",
@@ -73,7 +74,7 @@
       },
       {
         "heading": "$ caducidad",
-        "body": "Una sala caduca a los 30 días sin actualizaciones, y sus mensajes se eliminan en cuanto lo hace. Renombrarla, o cualquier otra edición, la renueva por otros 30 días desde ese momento — no hay una acción de \"renovar\" aparte, con editarla alcanza."
+        "body": "Quien crea o edita una sala elige cuánto dura (7, 30 o 90 días) — al pasar ese tiempo sin actualizaciones, la sala y sus mensajes se eliminan. Renombrarla, o cualquier otra edición, reinicia el plazo desde ese momento con la duración que elijas entonces — no hay una acción de \"renovar\" aparte, con editarla alcanza."
       },
       {
         "heading": "$ tema",
