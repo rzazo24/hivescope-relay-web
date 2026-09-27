@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { HelpModal } from './components/HelpModal'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { TerminalWindow } from './components/TerminalWindow'
 import { LinkScreen } from './features/link/LinkScreen'
@@ -9,6 +11,7 @@ function App() {
   const { t } = useTranslation()
   const { identity, keychainStatus, linkStatus, submitting, error, link } = useHiveLink()
   const linked = linkStatus.state === 'linked'
+  const [helpOpen, setHelpOpen] = useState(false)
 
   // La pantalla de vinculación es solo un formulario chico: no hace falta
   // que crezca mucho. Salas/chat sí se benefician de más ancho en pantallas
@@ -28,8 +31,19 @@ function App() {
     >
       <div className="flex items-start justify-between gap-3">
         <p className="cursor-blink text-xs text-muted">{linked ? t('rooms.prompt') : t('link.prompt')}</p>
-        <LanguageSwitcher />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setHelpOpen(true)}
+            className="text-xs text-muted underline decoration-dotted underline-offset-2 hover:text-ink"
+          >
+            {t('help.trigger')}
+          </button>
+          <LanguageSwitcher />
+        </div>
       </div>
+
+      {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
 
       {!linked && (
         <div>

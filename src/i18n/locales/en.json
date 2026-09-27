@@ -36,5 +36,32 @@
     "placeholder": "type a message…",
     "send": "> send",
     "sending": "> sending…"
+  },
+  "help": {
+    "trigger": "$ help",
+    "title": "man hivescope",
+    "close": "close",
+    "sections": [
+      {
+        "heading": "$ what_is_this",
+        "body": "HiveScope Chat is a decentralized chat linked to Hive accounts, built on the Nostr protocol. Every message is a Nostr event, stored by hivescope-relay — there's no company account or password, your identity is a cryptographic key."
+      },
+      {
+        "heading": "$ hive_keychain",
+        "body": "Hive Keychain is a browser extension (or mobile app) that holds your Hive keys, so you never type a password into this site or any other. You need it installed before you can link an account here — search \"Hive Keychain\" in your browser's extension store, or install the Hive Keychain mobile app."
+      },
+      {
+        "heading": "$ linking",
+        "body": "Linking signs a short message once with your Hive posting key, proving you control that account. We never see or store your private key, only that one signature. Each browser/device gets its own separate link — the same Hive account can be linked from several devices at once."
+      },
+      {
+        "heading": "$ rooms",
+        "body": "Any linked account can create a room; whoever creates a given name first is the only one who can update its details afterward. Any linked account can post in any room — room names aren't reserved for particular people to write in."
+      },
+      {
+        "heading": "$ privacy",
+        "body": "Messages are public: they're Nostr events anyone running a Nostr client can read, along with the room name and the pubkey that sent them. This isn't private or encrypted messaging — don't post anything you wouldn't want public."
+      }
+    ]
   }
 }

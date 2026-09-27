@@ -36,5 +36,32 @@
     "placeholder": "escribe un mensaje…",
     "send": "> enviar",
     "sending": "> enviando…"
+  },
+  "help": {
+    "trigger": "$ help",
+    "title": "man hivescope",
+    "close": "cerrar",
+    "sections": [
+      {
+        "heading": "$ que_es_esto",
+        "body": "HiveScope Chat es un chat descentralizado vinculado a cuentas de Hive, construido sobre el protocolo Nostr. Cada mensaje es un evento Nostr, guardado por hivescope-relay — no hay cuenta de empresa ni contraseña, tu identidad es una clave criptográfica."
+      },
+      {
+        "heading": "$ hive_keychain",
+        "body": "Hive Keychain es una extensión de navegador (o app móvil) que guarda tus claves de Hive, para que nunca escribas una contraseña en este sitio ni en ningún otro. Necesitas tenerla instalada antes de poder vincular una cuenta aquí — busca \"Hive Keychain\" en la tienda de extensiones de tu navegador, o instala la app móvil de Hive Keychain."
+      },
+      {
+        "heading": "$ vinculacion",
+        "body": "Vincularte firma una sola vez un mensaje corto con tu clave posting de Hive, demostrando que controlas esa cuenta. Nunca vemos ni guardamos tu clave privada, solo esa firma. Cada navegador/dispositivo tiene su propia vinculación por separado — la misma cuenta de Hive puede vincularse desde varios dispositivos a la vez."
+      },
+      {
+        "heading": "$ salas",
+        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado es el único que puede actualizar después sus datos. Cualquier cuenta vinculada puede escribir en cualquier sala — los nombres de sala no están reservados para que escriban personas concretas."
+      },
+      {
+        "heading": "$ privacidad",
+        "body": "Los mensajes son públicos: son eventos Nostr que puede leer cualquiera que use un cliente Nostr, junto con el nombre de la sala y el pubkey de quien los envió. Esto no es mensajería privada ni cifrada — no publiques nada que no quieras que sea público."
+      }
+    ]
   }
 }
