@@ -2,11 +2,14 @@
 @import 'tailwindcss';
 
 /*
- * Estética "hacker terminal": negro/verde neón, todo en monospace, ventanas
- * de terminal con barra de título de tres puntos. Es un tema único,
- * deliberadamente sin variante clara — un "terminal en modo claro" no
- * encaja con la referencia que se pidió, así que no seguimos el patrón de
- * prefers-color-scheme que usa el resto de hivescope-relay.
+ * Estética "hacker terminal": verde de marca sobre fondo oscuro o claro
+ * según el tema activo, todo en monospace, ventanas de terminal con barra
+ * de título de tres puntos. El oscuro sigue siendo el tema por defecto
+ * (identidad de marca); el claro es una variante explícita que el usuario
+ * elige ($ theme en la esquina, ver src/lib/theme.ts) -- no la detección
+ * automática de prefers-color-scheme de tres estados que usa el resto de
+ * hivescope-relay, aunque sí se usa una vez para el valor inicial de un
+ * visitante sin preferencia guardada, igual que con el idioma.
  */
 @theme {
   --color-base: #060a08;
@@ -31,9 +34,33 @@
   color-scheme: dark;
 }
 
+/* Tema claro: mismo lenguaje visual (verde de marca, monospace, ventanas de
+   terminal), invertido a fondo claro. El acento se oscurece respecto del
+   verde neón del tema oscuro porque ese mismo tono, usado como texto
+   (mensajes propios en el chat, hover de "editar") sobre fondo claro, no
+   pasa contraste mínimo -- en el tema oscuro esto no hace falta porque el
+   acento casi nunca se usa como texto de cuerpo, solo como fondo de botón. */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-base: #f3f6f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #e9f0ec;
+  --color-border: #c3d9cb;
+  --color-ink: #0c2a1c;
+  --color-muted: #5c7568;
+  --color-accent: #047857;
+  --color-accent-ink: #f2fffa;
+  --color-success: #067a4f;
+  --color-success-bg: #dff5e8;
+  --color-error: #b3261e;
+  --color-error-bg: #fbe4e2;
+  --color-code: #eef4f0;
+}
+
 body {
   background: var(--color-base);
-  background-image: radial-gradient(ellipse at top, rgba(0, 255, 162, 0.06), transparent 60%);
+  background-image: radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent) 6%, transparent), transparent 60%);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

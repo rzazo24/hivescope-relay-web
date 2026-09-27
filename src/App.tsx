@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { HelpModal } from './components/HelpModal'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { TerminalWindow } from './components/TerminalWindow'
+import { ThemeSwitcher } from './components/ThemeSwitcher'
 import { LinkScreen } from './features/link/LinkScreen'
 import { useHiveLink } from './features/link/useHiveLink'
 import { RoomList } from './features/rooms/RoomList'
@@ -50,6 +51,7 @@ function App() {
           >
             {t('help.trigger')}
           </button>
+          <ThemeSwitcher />
           <LanguageSwitcher />
         </div>
       </div>

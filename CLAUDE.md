@@ -103,13 +103,30 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    green/red status dot and "reconnecting" banner.
 
 **Styling**: Tailwind v4, config-free — tokens are defined directly in
-`src/index.css` via `@theme` (colors, `--font-sans`/`--font-mono`). This
-is currently a **single dark "hacker terminal" theme** (black background,
-neon green, monospace everywhere, `TerminalWindow` chrome with the
-three-dot title bar) — deliberately, per an explicit visual reference the
-project owner gave; there's no light mode and no `prefers-color-scheme`
-handling, unlike hivescope-relay's own `web/tools/*.html` pages (which use
-a different, cream/red palette — don't copy that one here).
+`src/index.css` via `@theme` (colors, `--font-sans`/`--font-mono`). The
+"hacker terminal" look (monospace everywhere, `TerminalWindow` chrome with
+the three-dot title bar) is unaffected by theme, but the color tokens have
+two variants: dark (default — black background, neon green, the original
+look per an explicit visual reference the project owner gave) and light
+(`:root[data-theme="light"]`, added later on request — same green brand
+identity, paper-white background). `src/lib/theme.ts` applies the theme by
+setting `data-theme` on `<html>` (module side effect, run from `main.tsx`
+before `index.css`/React mount, same pattern as `src/i18n/index.ts`
+syncing `<html lang>`), persists the choice in localStorage
+(`hivescope:theme`), and falls back to `prefers-color-scheme` only for a
+first-time visitor with nothing stored yet — same precedent as the
+language detector, not the three-state toggle hivescope-relay's own
+`web/tools/*.html` pages use (manual dark/light only, no explicit "system"
+option). `ThemeSwitcher.tsx` (next to `LanguageSwitcher` in the header)
+is the toggle.
+
+The light palette's accent (`--color-accent`, `#047857`) is deliberately
+**darker** than the dark theme's neon `#00ffa2` — the same token is used as
+plain text color in a couple of places (chat's "your own message" text,
+`RoomRow`'s edit-link hover), and neon green as text fails contrast on a
+light background even though it works fine as a dark theme's button
+background (where it almost never appears as body text). If you add a new
+use of `text-accent`, sanity-check it against both themes, not just dark.
 
 **i18n**: `i18next` + `react-i18next`, English/Spanish, set up in
 `src/i18n/`. Every user-facing string must go through `useTranslation()`

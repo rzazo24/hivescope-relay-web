@@ -29,8 +29,8 @@ npm run dev
 ```
 
 Por defecto habla con el relé de producción (`wss://relay.hivescope.xyz`).
-Para apuntarlo a una instancia local de `hivescope-relay`, copiá
-`.env.example` a `.env.local` y configurá `VITE_RELAY_URL`.
+Para apuntarlo a una instancia local de `hivescope-relay`, copia
+`.env.example` a `.env.local` y configura `VITE_RELAY_URL`.
 
 ```bash
 npm run build   # tsc -b && vite build -> dist/
@@ -81,7 +81,7 @@ Vincularse publica un evento `kind:30078` (`d=hive-link`) cuyo tag
 string `hivescope-relay-link:<pubkey_nostr>` — ver
 [`src/lib/hiveKeychain.ts`](src/lib/hiveKeychain.ts) (`linkChallenge`).
 Esto tiene que coincidir byte a byte con `LinkChallenge` en
-`internal/policies/hivelink.go` del relé; si tocás un lado, revisá el otro.
+`internal/policies/hivelink.go` del relé; si tocas un lado, revisa el otro.
 
 ## i18n
 
@@ -95,9 +95,18 @@ inválido) están en inglés, siguiendo la convención de NIP-01 para mensajes
 OK pensados para que los lea cualquier cliente Nostr — no se retraducen del
 lado del cliente.
 
+## Tema
+
+Oscuro ("hacker terminal": negro, verde neón) por defecto, con una variante
+clara — mismo verde de marca, fondo blanco papel — que se puede cambiar en
+cualquier momento (`$ tema oscuro/claro` en la esquina) y queda recordada
+en localStorage. Quien visita por primera vez sin nada guardado recibe la
+que coincida con la preferencia de su sistema operativo, igual que con la
+detección de idioma de arriba.
+
 ## Desplegar
 
-Acá no hay Dockerfile — el build estático lo sirve el mismo Caddy que ya
+Aquí no hay Dockerfile — el build estático lo sirve el mismo Caddy que ya
 corre [hivescope-relay](https://github.com/rzazo24/hivescope-relay) en el
 VPS (solo un proceso puede escuchar en el puerto 443). Ver el
 `docker-compose.yml`/`Caddyfile` y el README de ese repo para el detalle

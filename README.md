@@ -93,6 +93,14 @@ Relay rejection reasons (shown as-is when something's invalid) are in
 English, matching NIP-01 convention for OK messages meant to be read by
 any Nostr client — they aren't re-translated client-side.
 
+## Theme
+
+Dark ("hacker terminal": black, neon green) by default, with a light
+variant — same green brand accent, paper-white background — switchable any
+time (`$ theme dark/light` in the corner) and remembered in localStorage.
+A first-time visitor with nothing stored gets whichever matches their OS
+preference, same as the language detection above.
+
 ## Deploying
 
 There's no Dockerfile here — the static build is served by the same Caddy
