@@ -15,7 +15,7 @@
     "submitting": "> firmando…",
     "submit": "> vincular con hive keychain",
     "logout": "cerrar sesión",
-    "logoutConfirm": "¿Olvidar la vinculación de este dispositivo? Necesitarás Hive Keychain para volver a vincularte, y será una identidad nueva, no la misma que antes (no se pierde nada del lado de Hive, solo la conexión de este navegador con ella)."
+    "logoutConfirm": "¿Olvidar la vinculación de este dispositivo? Tu cuenta de Hive seguirá siendo @{{account}} — solo tendrás que volver a vincularla aquí con Hive Keychain, con un par de claves Nostr nuevo para este navegador."
   },
   "theme": {
     "switchToDark": "cambiar a tema oscuro",

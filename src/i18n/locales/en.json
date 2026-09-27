@@ -15,7 +15,7 @@
     "submitting": "> signing…",
     "submit": "> link with hive keychain",
     "logout": "logout",
-    "logoutConfirm": "Forget this device's link? You'll need Hive Keychain to re-link, and it'll be a new identity — not the same one as before (nothing is lost on the Hive side, just this browser's connection to it)."
+    "logoutConfirm": "Forget this device's link? Your Hive account will still be @{{account}} — you'll just need to re-link it here with Hive Keychain, using a new Nostr keypair for this browser."
   },
   "theme": {
     "switchToDark": "switch to dark theme",

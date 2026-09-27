@@ -43,7 +43,8 @@ function App() {
           <button
             type="button"
             onClick={() => {
-              if (window.confirm(t('link.logoutConfirm'))) logout()
+              const account = linkStatus.state === 'linked' ? linkStatus.account : ''
+              if (window.confirm(t('link.logoutConfirm', { account }))) logout()
             }}
             className="text-xs text-muted underline decoration-dotted underline-offset-2 hover:text-error"
           >
