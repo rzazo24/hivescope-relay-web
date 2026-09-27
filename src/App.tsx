@@ -18,7 +18,14 @@ function App() {
     : 'max-w-md sm:max-w-lg'
 
   return (
-    <main className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-center gap-4 px-4 py-8 transition-[max-width]`}>
+    // En móvil el contenido arranca cerca del borde superior (con poco
+    // padding), en vez de quedar centrado en todo el alto de la pantalla:
+    // centrado, en una vista corta como la de salas, dejaba más de la mitad
+    // de la pantalla vacía arriba y abajo. Desde `sm` para arriba sí se
+    // centra, que es donde sobra espacio de verdad.
+    <main
+      className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:justify-center sm:py-8`}
+    >
       <div className="flex items-start justify-between gap-3">
         <p className="cursor-blink text-xs text-muted">{linked ? t('rooms.prompt') : t('link.prompt')}</p>
         <LanguageSwitcher />
