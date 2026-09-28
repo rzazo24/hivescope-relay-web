@@ -231,21 +231,23 @@ export function tallyMessages(events: { tags: string[][] }[]): Map<string, numbe
   return counts
 }
 
-/** Número de mensajes guardados en cada sala: una sola consulta al relé para todas. */
-export async function countMessagesByRoom(slugs: string[]): Promise<Map<string, number>> {
-  if (slugs.length === 0) return new Map()
+export type RoomMessage = { tags: string[][]; pubkey: string; created_at: number }
+
+/** Mensajes guardados en las salas dadas: una sola consulta al relé para todas. */
+export async function fetchRoomMessages(slugs: string[]): Promise<RoomMessage[]> {
+  if (slugs.length === 0) return []
   const relay = await Relay.connect(RELAY_URL)
   try {
     return await new Promise((resolve) => {
-      const events: { tags: string[][] }[] = []
+      const events: RoomMessage[] = []
       const sub = relay.subscribe([{ kinds: [9], '#t': slugs, limit: 5000 }], {
         onevent: (event) => events.push(event),
         oneose() {
           sub.close()
-          resolve(tallyMessages(events))
+          resolve(events)
         },
         onclose() {
-          resolve(tallyMessages(events))
+          resolve(events)
         },
       })
     })

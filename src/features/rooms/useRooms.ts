@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Relay } from 'nostr-tools/relay'
 import { RELAY_URL } from '../../lib/config'
-import { countMessagesByRoom, createRoom, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, type Room } from '../../lib/rooms'
+import { loadLastSeen, markSeen, saveLastSeen, tallyUnread, withBaseline, type LastSeen } from '../../lib/unread'
+import { createRoom, fetchRoomMessages, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, tallyMessages, type Room } from '../../lib/rooms'
 
 // Cada cuánto se vuelve a pedir la lista completa. Las altas y ediciones llegan
 // en vivo por la suscripción, pero cuando el relé borra una sala caducada no
@@ -10,7 +11,7 @@ const REFRESH_MS = 60_000
 // Cada cuánto se re-evalúa qué salas ya han caducado (sin ir al relé).
 const EXPIRY_TICK_MS = 30_000
 
-export function useRooms() {
+export function useRooms(myPubkey: string, currentSlug: string | null) {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -60,17 +61,74 @@ export function useRooms() {
     }
   }, [])
 
-  // Mensajes por sala: se recuentan al cambiar el conjunto de salas y cada
-  // REFRESH_MS (también recoge los borrados); entre medias suben en vivo.
+  // Mensajes por sala y no leídos: se recuentan al cambiar el conjunto de salas
+  // y cada REFRESH_MS (también recoge los borrados); entre medias suben en vivo.
+  // "Leído" = marca por sala guardada en este dispositivo; la sala abierta (con
+  // la pestaña visible) se va marcando sola.
   const [counts, setCounts] = useState<Map<string, number>>(new Map())
+  const [unread, setUnread] = useState<Map<string, number>>(new Map())
+  const seenRef = useRef<LastSeen>(loadLastSeen())
+  const currentRef = useRef(currentSlug)
+  useEffect(() => {
+    currentRef.current = currentSlug
+  }, [currentSlug])
+
+  const markRead = useCallback((slug: string, ts = Math.floor(Date.now() / 1000)) => {
+    const next = markSeen(seenRef.current, slug, ts)
+    if (next !== seenRef.current) {
+      seenRef.current = next
+      saveLastSeen(next)
+    }
+    setUnread((prev) => {
+      if (!prev.has(slug)) return prev
+      const m = new Map(prev)
+      m.delete(slug)
+      return m
+    })
+  }, [])
+
+  // La sala abierta se marca leída al entrar, al volver a la pestaña y al salir.
+  // (Al entrar el estado `unread` no se toca: la sala abierta se oculta al devolverlo;
+  // se limpia de verdad al salir.)
+  useEffect(() => {
+    if (!currentSlug) return
+    const stamp = () => {
+      seenRef.current = markSeen(seenRef.current, currentSlug, Math.floor(Date.now() / 1000))
+      saveLastSeen(seenRef.current)
+    }
+    stamp()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') markRead(currentSlug)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      markRead(currentSlug)
+    }
+  }, [currentSlug, markRead])
+
   const slugsKey = rooms === null ? null : rooms.map((r) => r.slug).sort().join('\n')
   useEffect(() => {
     if (slugsKey === null) return
     const slugs = slugsKey ? slugsKey.split('\n') : []
     let cancelled = false
     const load = () =>
-      countMessagesByRoom(slugs)
-        .then((c) => !cancelled && setCounts(c))
+      fetchRoomMessages(slugs)
+        .then((events) => {
+          if (cancelled) return
+          const now = Math.floor(Date.now() / 1000)
+          const baselined = withBaseline(seenRef.current, slugs, now)
+          if (baselined !== seenRef.current) {
+            seenRef.current = baselined
+            saveLastSeen(baselined)
+          }
+          const cur = currentRef.current
+          if (cur && document.visibilityState === 'visible') markRead(cur, now)
+          setCounts(tallyMessages(events))
+          const u = tallyUnread(events, seenRef.current, myPubkey)
+          if (cur && document.visibilityState === 'visible') u.delete(cur)
+          setUnread(u)
+        })
         .catch(() => {})
     load()
     const id = setInterval(load, REFRESH_MS)
@@ -82,7 +140,14 @@ export function useRooms() {
         r.subscribe([{ kinds: [9], limit: 0 }], {
           onevent(event) {
             const slug = event.tags.find((t) => t[0] === 't')?.[1]
-            if (slug) setCounts((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+            if (!slug) return
+            setCounts((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+            if (event.pubkey === myPubkey) return
+            if (slug === currentRef.current && document.visibilityState === 'visible') {
+              markRead(slug, event.created_at)
+            } else if (seenRef.current[slug] !== undefined) {
+              setUnread((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+            }
           },
         })
       })
@@ -92,7 +157,7 @@ export function useRooms() {
       clearInterval(id)
       relay?.close()
     }
-  }, [slugsKey])
+  }, [slugsKey, myPubkey, markRead])
 
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000))
   useEffect(() => {
@@ -144,5 +209,12 @@ export function useRooms() {
     [refresh],
   )
 
-  return { rooms: visibleRooms, counts, error, refresh, creating, createError, create, updating, updateError, update }
+  const shownUnread = (() => {
+    if (!currentSlug || !unread.has(currentSlug)) return unread
+    const m = new Map(unread)
+    m.delete(currentSlug)
+    return m
+  })()
+
+  return { rooms: visibleRooms, counts, unread: shownUnread, error, refresh, creating, createError, create, updating, updateError, update }
 }

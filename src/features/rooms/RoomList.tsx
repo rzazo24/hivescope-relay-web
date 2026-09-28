@@ -10,7 +10,10 @@ import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { roomUrl } from '../../lib/roomRoute'
 import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
+import { titleWithUnread } from '../../lib/unread'
 import { useRooms } from './useRooms'
+
+const BASE_TITLE = 'HiveScope Chat'
 
 function shortPubkey(pubkey: string) {
   return `${pubkey.slice(0, 8)}…${pubkey.slice(-4)}`
@@ -55,6 +58,7 @@ function RoomRow({
   adminLabel,
   online,
   messages,
+  unread,
   onSelect,
   onSave,
 }: {
@@ -63,6 +67,7 @@ function RoomRow({
   adminLabel: string
   online: number
   messages: number
+  unread: number
   onSelect: () => void
   onSave: (name: string, lifetimeSeconds: number) => Promise<boolean>
 }) {
@@ -140,6 +145,11 @@ function RoomRow({
         <span className="text-ink">
           <span className="text-muted">&gt; </span>
           {room.name}
+          {unread > 0 && (
+            <span className="ml-2 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink">
+              {t('rooms.unread', { count: unread > 99 ? '99+' : unread })}
+            </span>
+          )}
         </span>
         <span className="text-xs text-muted">
           {adminLabel}
@@ -167,9 +177,17 @@ function RoomRow({
 
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
-  const { rooms, counts, error, creating, createError, create, update } = useRooms()
   const route = useRoomRoute()
+  const { rooms, counts, unread, error, creating, createError, create, update } = useRooms(identity.publicKey, route.slug)
   const online = useOnline()
+  // Título de la pestaña con el total de no leídos.
+  const unreadTotal = [...unread.values()].reduce((a, b) => a + b, 0)
+  useEffect(() => {
+    document.title = titleWithUnread(BASE_TITLE, unreadTotal)
+    return () => {
+      document.title = BASE_TITLE
+    }
+  }, [unreadTotal])
   const selectedRoom = route.slug ? (rooms?.find((r) => r.slug === route.slug) ?? null) : null
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
@@ -266,6 +284,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   adminLabel={adminLabel}
                   online={online.byRoom.get(room.slug) ?? 0}
                   messages={counts.get(room.slug) ?? 0}
+                  unread={unread.get(room.slug) ?? 0}
                   onSelect={() => route.open(room.slug)}
                   onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />

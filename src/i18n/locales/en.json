@@ -34,6 +34,7 @@
     "creating": "> creating…",
     "messages_one": "{{count}} message",
     "messages_other": "{{count}} messages",
+    "unread": "{{count}} new",
     "adminPrefix": "admin:",
     "back": "< cd ..",
     "enteredTitle": "$ cd {{slug}}",

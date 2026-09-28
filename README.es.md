@@ -86,6 +86,10 @@ El icono de personas muestra cuántas cuentas Hive están en línea: en total (b
 
 Cada sala del listado muestra cuántos mensajes tiene. Una sola consulta al relé los cuenta todos (se repite cada minuto, así que los borrados se reflejan) y los mensajes nuevos suben el número en vivo.
 
+## Mensajes no leídos
+
+Las salas con mensajes que no has visto muestran una etiqueta «N nuevos», y el título de la pestaña lleva el total («(3) HiveScope Chat»). «Visto» es una marca de tiempo por sala guardada en el localStorage de este dispositivo (`src/lib/unread.ts`); las salas que nunca habías visto arrancan como leídas, tus propios mensajes no cuentan y la sala abierta se marca leída mientras la pestaña está visible.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.
