@@ -101,6 +101,19 @@ body {
   background: transparent;
 }
 
+/* iOS Safari hace zoom automático al enfocar un campo con fuente < 16px, y
+   no vuelve solo. En vez de bloquear el zoom con maximum-scale (que quita el
+   zoom manual a quien lo necesita), los campos de texto miden 16px en
+   pantallas táctiles. Va sin @layer a propósito para ganar a las utilidades
+   text-sm de Tailwind, que sí van en capa. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 @keyframes blink {
   0%,
   49% {
