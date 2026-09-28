@@ -78,7 +78,7 @@
       },
       {
         "heading": "$ rooms",
-        "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner, the account currently listed as its admin, or the relay's operator account can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in."
+        "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner, the account currently listed as its admin (from any of your devices linked to that same Hive account), or the relay's operator account can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in."
       },
       {
         "heading": "$ expiration",

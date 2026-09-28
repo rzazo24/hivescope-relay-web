@@ -84,6 +84,13 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    can resubmit the *current* `admin` value unchanged instead of silently
    reassigning it to whoever happens to be editing.
 
+   **Ownership is per Hive account**: `canManageRoom` (`rooms.ts`) shows the
+   edit button for the exact owner/admin pubkey *or* any pubkey whose linked
+   account equals the owner's/admin's account (resolved with
+   `useHiveAccountNames` over both `admin` and `ownerPubkey`), mirroring the
+   relay's `sharesHiveAccount`, so a room made on your phone is editable
+   from your PC. Cosmetic only — the relay decides.
+
    NIP-33 replacement is scoped to `(pubkey, kind, d)`, not just `(kind,
    d)` — so once a room's admin is delegated to a different pubkey and
    that pubkey publishes an update, the relay legitimately ends up storing

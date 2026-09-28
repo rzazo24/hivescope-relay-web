@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatTimeRemaining, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
+import { canManageRoom, formatTimeRemaining, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -186,5 +186,30 @@ describe('formatTimeRemaining', () => {
 
   it('returns null when there is no expiration data (expiresAt <= 0)', () => {
     expect(formatTimeRemaining(0, now)).toBeNull()
+  })
+})
+
+describe('canManageRoom', () => {
+  const room = { ownerPubkey: 'owner-pk', admin: 'admin-pk' }
+  const accounts = new Map([
+    ['owner-pk', 'Ana'],
+    ['admin-pk', 'bea'],
+  ])
+
+  it('is true for the exact owner or admin pubkey, and for the superadmin', () => {
+    expect(canManageRoom(room, 'owner-pk', 'x', new Map())).toBe(true)
+    expect(canManageRoom(room, 'admin-pk', 'x', new Map())).toBe(true)
+    expect(canManageRoom(room, 'other', 'x', new Map(), true)).toBe(true)
+  })
+
+  it("is true for another device linked to the owner's or admin's hive account (case-insensitive)", () => {
+    expect(canManageRoom(room, 'phone-pk', 'ana', accounts)).toBe(true)
+    expect(canManageRoom(room, 'phone-pk', 'BEA', accounts)).toBe(true)
+  })
+
+  it('is false for a different hive account, or when nothing resolved', () => {
+    expect(canManageRoom(room, 'phone-pk', 'carla', accounts)).toBe(false)
+    expect(canManageRoom(room, 'phone-pk', 'ana', new Map())).toBe(false)
+    expect(canManageRoom(room, 'phone-pk', '', accounts)).toBe(false)
   })
 })

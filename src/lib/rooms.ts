@@ -173,3 +173,25 @@ export async function createRoom(
     secretKey,
   )
 }
+
+/**
+ * Si el usuario debería ver el botón "editar" de una sala. Cuenta como
+ * dueño/admin: el pubkey exacto, o cualquier otro pubkey (otro
+ * navegador/dispositivo) vinculado a la MISMA cuenta Hive que el dueño o el
+ * admin -- igual que decide el relé (sharesHiveAccount en roommeta.go); la
+ * identidad real es la cuenta Hive, el pubkey de Nostr es solo la clave de
+ * sesión de cada dispositivo. `accountsByPubkey` es lo que ya resolvió
+ * useHiveAccountNames. Puramente cosmético: el relé es quien autoriza.
+ */
+export function canManageRoom(
+  room: Pick<Room, 'ownerPubkey' | 'admin'>,
+  publicKey: string,
+  account: string,
+  accountsByPubkey: ReadonlyMap<string, string>,
+  isSuperadmin = false,
+): boolean {
+  if (isSuperadmin || publicKey === room.ownerPubkey || publicKey === room.admin) return true
+  const mine = account.toLowerCase()
+  if (!mine) return false
+  return [room.ownerPubkey, room.admin].some((pk) => accountsByPubkey.get(pk)?.toLowerCase() === mine)
+}

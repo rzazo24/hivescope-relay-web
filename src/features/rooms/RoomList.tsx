@@ -5,7 +5,7 @@ import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import { SITE_URL, SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
-import { DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
+import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
 
 function shortPubkey(pubkey: string) {
@@ -164,7 +164,9 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const [snapOffer, setSnapOffer] = useState<string | null>(null)
   const [snapStatus, setSnapStatus] = useState<'idle' | 'posting' | 'error' | 'done'>('idle')
   const [snapError, setSnapError] = useState<string | null>(null)
-  const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
+  // Cuentas Hive de los admins (para mostrarlas) y de los dueños (para saber si
+  // otro dispositivo tuyo también puede editar la sala).
+  const adminNames = useHiveAccountNames(rooms?.flatMap((r) => [r.admin, r.ownerPubkey]) ?? [])
   // Cosmético: el relé es quien de verdad decide si la edición se acepta
   // (ver NewRoomMetaPolicy/HIVESCOPE_SUPERADMIN_HIVE_ACCOUNT); esto solo
   // evita esconderle el botón "editar" al superadmin en salas ajenas.
@@ -216,7 +218,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         {rooms && rooms.length > 0 && (
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-md border border-border">
             {rooms.map((room) => {
-              const canManage = identity.publicKey === room.ownerPubkey || identity.publicKey === room.admin || isSuperadmin
+              const canManage = canManageRoom(room, identity.publicKey, account, adminNames, isSuperadmin)
               const adminLabel = `${t('rooms.adminPrefix')} ${
                 adminNames.has(room.admin) ? `@${adminNames.get(room.admin)}` : shortPubkey(room.admin)
               }`
