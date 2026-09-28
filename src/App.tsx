@@ -20,17 +20,16 @@ function App() {
   // que crezca mucho. Salas/chat sí se benefician de más ancho en pantallas
   // grandes (lista de salas, mensajes), así que su tope crece más.
   const widthClass = linked
-    ? 'max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl'
-    : 'max-w-md sm:max-w-lg'
+    ? 'max-w-md sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl'
+    : 'max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl'
 
   return (
-    // En móvil el contenido arranca cerca del borde superior (con poco
-    // padding), en vez de quedar centrado en todo el alto de la pantalla:
-    // centrado, en una vista corta como la de salas, dejaba más de la mitad
-    // de la pantalla vacía arriba y abajo. Desde `sm` para arriba sí se
-    // centra, que es donde sobra espacio de verdad.
+    // El contenido siempre arranca pegado arriba (móvil y escritorio): centrado
+    // verticalmente dejaba mucho hueco vacío arriba y abajo en vistas cortas
+    // como la lista de salas. En pantallas grandes el contenedor crece con el
+    // ancho para no dejar tanto margen lateral.
     <main
-      className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:justify-center sm:py-8`}
+      className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:px-6 sm:py-6`}
     >
       {/* En la pantalla de vinculación la marca es el título grande (logo +
           "HiveScope Chat"), así que no hace falta repetirla arriba también:
