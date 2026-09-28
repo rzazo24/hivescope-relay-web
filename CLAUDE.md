@@ -147,6 +147,17 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    "currently expires in: Xd" so it's clear that line is status, not the
    picker. This is a point-in-time read from whenever `listRooms()` last
    ran, not a live ticking countdown — no interval/timer involved.
+   **Message counts and unread badges** also live in `useRooms.ts`: one
+   `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
+   feeds both `tallyMessages` (count) and `tallyUnread` (messages from other
+   pubkeys newer than the per-room `lastSeen` in localStorage,
+   `src/lib/unread.ts`); a `kinds:[9], limit:0` subscription bumps them live.
+   Rooms with no `lastSeen` entry get a baseline of "now" (otherwise history
+   would all be "new"); the open room is hidden from `unread` and stamped on
+   enter/leave/tab-visible. The relay's filter rate limit (20/min, burst 60)
+   is per IP, so many reloads in a row while testing make REQs fail silently
+   (counts show 0) — wait a minute, it's not a bug.
+
    **The room list is live** (`useRooms.ts`): besides the one-shot
    `listRooms()` for the initial state, it keeps a subscription
    (`kinds:[30078], limit:0` = only new events) and merges each arriving room
