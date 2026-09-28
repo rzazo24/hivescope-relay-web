@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { OnlinePerson } from '../lib/presence'
+import { Avatar } from './Avatar'
 
 function UsersIcon() {
   return (
@@ -97,7 +98,8 @@ export function OnlineBadge({
             <ul className="flex max-h-60 flex-col gap-0.5 overflow-y-auto">
               {people.map((p) => (
                 <li key={p.key} className="flex items-baseline justify-between gap-2 rounded px-1 py-0.5 hover:bg-surface-2">
-                  <span className="truncate text-ink">
+                  <span className="flex min-w-0 items-center gap-1.5 truncate text-ink">
+                    {p.account && <Avatar account={p.account} />}
                     {p.account ? `@${p.account}` : shortKey(p.key)}
                     {p.account !== null && p.account === me && <span className="text-muted"> ({t('presence.you')})</span>}
                   </span>

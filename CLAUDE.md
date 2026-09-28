@@ -180,6 +180,12 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    bumped live), so rooms with no messages sort last. Sort mode is kept in
    localStorage `hivescope:room-sort`.
 
+   **Avatars** (`Avatar.tsx`, `hiveAvatar.ts`) hotlink
+   `images.hive.blog/u/<account>/avatar/small` with `referrerPolicy=no-referrer`
+   and a letter fallback on error; the account name is validated by regex before
+   building the URL. Disclosed in the help's privacy text (the image host sees
+   viewers' IPs) — keep that if you change the source.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

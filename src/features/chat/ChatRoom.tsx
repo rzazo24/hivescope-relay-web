@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
+import { Avatar } from '../../components/Avatar'
 import { ConfirmModal } from '../../components/ConfirmModal'
 import { OnlineBadge } from '../../components/OnlineBadge'
 import { useOnline } from '../../hooks/usePresence'
@@ -236,6 +237,7 @@ export function ChatRoom({
               }
             >
               <div className="flex items-baseline gap-2 text-[11px] text-muted">
+                {(isMe ? account : senderNames.get(msg.pubkey)) && <Avatar account={isMe ? account : senderNames.get(msg.pubkey)!} />}
                 {isMe || !senderNames.has(msg.pubkey) ? (
                   <span>{isMe ? t('chat.you') : shortPubkey(msg.pubkey)}</span>
                 ) : (

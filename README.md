@@ -104,6 +104,10 @@ An opt-in "alerts" switch in the top bar shows a browser notification when a mes
 
 With two or more rooms the list gets a search box (name or slug) and a sort switch: last activity (default), online now, message count, or name; the choice is remembered per device. Last activity comes from the same message query that feeds the counts, and updates live (`filterRooms`/`sortRooms` in `src/lib/rooms.ts`).
 
+## Hive avatars
+
+Each sender in the chat (and each person in the online list) shows their Hive profile picture, loaded from `https://images.hive.blog/u/<account>/avatar/small` with an initial as fallback. It is the only third-party request the app makes for content, disclosed in the help's privacy section (`src/components/Avatar.tsx`, `src/lib/hiveAvatar.ts`).
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

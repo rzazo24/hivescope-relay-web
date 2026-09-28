@@ -106,6 +106,10 @@ Un interruptor opcional «avisos» en la barra superior muestra una notificació
 
 Con dos o más salas la lista muestra un buscador (nombre o slug) y un selector de orden: última actividad (por defecto), conectados ahora, número de mensajes o nombre; la elección se recuerda por dispositivo. La última actividad sale de la misma consulta de mensajes que alimenta los contadores y se actualiza en vivo (`filterRooms`/`sortRooms` en `src/lib/rooms.ts`).
 
+## Avatares de Hive
+
+Cada persona que escribe en el chat (y cada una de la lista de conectados) muestra su foto de perfil de Hive, cargada desde `https://images.hive.blog/u/<cuenta>/avatar/small`, con una inicial de reserva. Es la única petición a terceros que hace la app para contenido, y se avisa en la sección de privacidad de la ayuda (`src/components/Avatar.tsx`, `src/lib/hiveAvatar.ts`).
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.
