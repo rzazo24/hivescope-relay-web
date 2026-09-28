@@ -35,6 +35,7 @@
     "messages_one": "{{count}} message",
     "messages_other": "{{count}} messages",
     "unread": "{{count}} new",
+    "directedTitle": "mentions or replies to you",
     "adminPrefix": "admin:",
     "back": "< cd ..",
     "enteredTitle": "$ cd {{slug}}",
@@ -64,6 +65,10 @@
     "send": "> send",
     "sending": "> sending…",
     "emoji": "emoji",
+    "reply": "reply",
+    "replyingTo": "replying to {{name}}",
+    "replyCancel": "cancel reply",
+    "replyMissing": "↩ earlier message",
     "delete": "delete",
     "deleteTitle": "rm message",
     "deleteConfirm": "Delete this message? It disappears for everyone in the room and can't be undone.",
@@ -90,6 +95,10 @@
       {
         "heading": "$ rooms",
         "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner, the account currently listed as its admin (from any of your devices linked to that same Hive account), or the relay's operator account can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in. Every room has a direct link (chat.hivescope.xyz/r/room-name) you can copy with the \"copy link\" button inside the room; opening it takes you straight there once you're linked. The link stops working when the room expires."
+      },
+      {
+        "heading": "$ mentions_replies",
+        "body": "Type @ and an account name to mention someone (suggestions come from people who wrote or are in the room; Tab or Enter picks one). Mentions are highlighted, and a message that mentions you or replies to yours is marked and shows an @ badge in the room list. The \"reply\" link under each message quotes it above yours. It's all part of the public message, so mentions and who you reply to are visible to anyone, like the rest."
       },
       {
         "heading": "$ expiration",

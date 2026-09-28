@@ -43,9 +43,11 @@ export function markSeen(seen: LastSeen, slug: string, ts: number): LastSeen {
 
 /** Mensajes ajenos posteriores a la marca de leído, por sala. */
 export function tallyUnread(
-  events: { tags: string[][]; pubkey: string; created_at: number }[],
+  events: { tags: string[][]; pubkey: string; created_at: number; content?: string }[],
   seen: LastSeen,
   myPubkey: string,
+  /** Si se da, solo cuentan los mensajes que la cumplen (p. ej. "va dirigido a mí"). */
+  only?: (event: { tags: string[][]; content: string }) => boolean,
 ): Map<string, number> {
   const unread = new Map<string, number>()
   for (const event of events) {
@@ -53,6 +55,7 @@ export function tallyUnread(
     if (!slug || event.pubkey === myPubkey) continue
     const since = seen[slug]
     if (since === undefined || event.created_at <= since) continue
+    if (only && !only({ tags: event.tags, content: event.content ?? '' })) continue
     unread.set(slug, (unread.get(slug) ?? 0) + 1)
   }
   return unread

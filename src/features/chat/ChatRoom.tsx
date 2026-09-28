@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
@@ -11,10 +11,35 @@ import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
 import { isOwnMessage } from './deletion'
-import { useChatRoom } from './useChatRoom'
+import { applyMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet, splitMentions } from './mentions'
+import { type ChatMessage, useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
   return `${pubkey.slice(0, 8)}…${pubkey.slice(-4)}`
+}
+
+function ReplyQuote({
+  parent,
+  parentId,
+  nameOf,
+  fallback,
+  onJump,
+}: {
+  parent: ChatMessage | null
+  parentId: string
+  nameOf: (pubkey: string) => string
+  fallback: string
+  onJump: (id: string) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => parent && onJump(parentId)}
+      className="mb-0.5 block max-w-full truncate border-l-2 border-border pl-2 text-left text-[11px] text-muted hover:text-ink"
+    >
+      ↩ {parent ? `${nameOf(parent.pubkey)}: ${quoteSnippet(parent.content, 80)}` : fallback}
+    </button>
+  )
 }
 
 function formatTime(unixSeconds: number) {
@@ -40,7 +65,63 @@ export function ChatRoom({
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [copied, setCopied] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
+  const [caret, setCaret] = useState(0)
+  const [pickIndex, setPickIndex] = useState(0)
   const senderNames = useHiveAccountNames(messages.map((m) => m.pubkey))
+
+  // Cuentas que se pueden mencionar: quien ha escrito aquí y quien está en la sala.
+  const knownAccounts = [
+    ...senderNames.values(),
+    ...peopleInRoom(online.people, room.slug).flatMap((p) => (p.account ? [p.account] : [])),
+  ]
+  const mention = mentionQuery(draft, caret)
+  // Si ya está escrita entera la única cuenta posible, no hay nada que completar:
+  // Enter tiene que enviar el mensaje, no "elegir" lo que ya está puesto.
+  const rawCandidates = mention ? mentionCandidates(knownAccounts, mention.query, account) : []
+  const candidates = rawCandidates.length === 1 && rawCandidates[0].toLowerCase() === mention?.query ? [] : rawCandidates
+  const showCandidates = candidates.length > 0 && !sending
+
+  const pickMention = (acc: string) => {
+    if (!mention) return
+    const { text, caret: c } = applyMention(draft, mention.start, caret, acc)
+    setDraft(text)
+    setCaret(c)
+    setPickIndex(0)
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.setSelectionRange(c, c)
+    })
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (showCandidates) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const d = e.key === 'ArrowDown' ? 1 : -1
+        setPickIndex((i) => (i + d + candidates.length) % candidates.length)
+        return
+      }
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault()
+        pickMention(candidates[Math.min(pickIndex, candidates.length - 1)])
+        return
+      }
+    }
+    if (e.key === 'Escape' && replyingTo) setReplyingTo(null)
+  }
+
+  const startReply = (msg: ChatMessage) => {
+    setReplyingTo(msg)
+    inputRef.current?.focus()
+  }
+
+  const nameOf = (pubkey: string) => (senderNames.has(pubkey) ? `@${senderNames.get(pubkey)}` : shortPubkey(pubkey))
+
+  const jumpTo = (id: string) => {
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-msg="${id}"]`)
+    el?.scrollIntoView({ block: 'center' })
+  }
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
@@ -78,7 +159,9 @@ export function ChatRoom({
     const content = draft.trim()
     if (!content) return
     setDraft('')
-    send(content)
+    setCaret(0)
+    setReplyingTo(null)
+    send(content, replyingTo ?? undefined)
   }
 
   return (
@@ -117,12 +200,27 @@ export function ChatRoom({
           // deja borrar en ambos casos, ver NewDeletionOutcome).
           const isMe = isOwnMessage(msg.pubkey, identity.publicKey, account, senderNames)
           return (
-            <div key={msg.id}>
+            <div
+              key={msg.id}
+              data-msg={msg.id}
+              className={
+                !isMe && (mentionsAccount(msg.content, account) || (msg.replyTo !== null && msg.mentioned.includes(identity.publicKey)))
+                  ? '-mx-1.5 border-l-2 border-accent bg-surface px-1.5'
+                  : undefined
+              }
+            >
               <div className="flex items-baseline gap-2 text-[11px] text-muted">
                 <span>
                   {isMe ? t('chat.you') : senderNames.has(msg.pubkey) ? `@${senderNames.get(msg.pubkey)}` : shortPubkey(msg.pubkey)}
                 </span>
                 <span>{formatTime(msg.createdAt)}</span>
+                <button
+                  type="button"
+                  onClick={() => startReply(msg)}
+                  className="underline decoration-dotted underline-offset-2 transition hover:text-accent"
+                >
+                  {t('chat.reply')}
+                </button>
                 {isMe && (
                   <button
                     type="button"
@@ -133,18 +231,74 @@ export function ChatRoom({
                   </button>
                 )}
               </div>
-              <p className={isMe ? 'text-accent' : 'text-ink'}>{msg.content}</p>
+              {msg.replyTo && (
+                <ReplyQuote
+                  parent={messages.find((m) => m.id === msg.replyTo) ?? null}
+                  nameOf={nameOf}
+                  fallback={t('chat.replyMissing')}
+                  onJump={jumpTo}
+                  parentId={msg.replyTo}
+                />
+              )}
+              <p className={`break-words ${isMe ? 'text-accent' : 'text-ink'}`}>
+                {splitMentions(msg.content).map((piece, i) =>
+                  piece.account ? (
+                    <span
+                      key={i}
+                      className={piece.account === account.toLowerCase() ? 'rounded-sm bg-accent px-0.5 font-bold text-accent-ink' : 'font-bold text-accent'}
+                    >
+                      {piece.text}
+                    </span>
+                  ) : (
+                    piece.text
+                  ),
+                )}
+              </p>
             </div>
           )
         })}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      {replyingTo && (
+        <div className="flex items-center justify-between gap-2 border-l-2 border-accent bg-code px-2 py-1 text-xs text-muted">
+          <span className="min-w-0 truncate">
+            {t('chat.replyingTo', { name: nameOf(replyingTo.pubkey) })} · {quoteSnippet(replyingTo.content, 60)}
+          </span>
+          <button type="button" onClick={() => setReplyingTo(null)} aria-label={t('chat.replyCancel')} className="shrink-0 hover:text-error">
+            ✕
+          </button>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
+        {showCandidates && (
+          <ul role="listbox" className="absolute bottom-full left-0 z-10 mb-1 min-w-40 overflow-hidden rounded-md border border-border bg-surface text-xs shadow-lg">
+            {candidates.map((c, i) => (
+              <li key={c} role="option" aria-selected={i === pickIndex}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pickMention(c)}
+                  className={`block w-full px-3 py-1.5 text-left ${i === pickIndex ? 'bg-surface-2 text-accent' : 'text-ink hover:bg-surface-2'}`}
+                >
+                  @{c}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <input
           ref={inputRef}
           type="text"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value)
+            setCaret(e.target.selectionStart ?? e.target.value.length)
+            setPickIndex(0)
+          }}
+          onKeyDown={handleKeyDown}
+          onKeyUp={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}
+          onClick={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}
           placeholder={t('chat.placeholder')}
           autoComplete="off"
           disabled={!connected || sending}

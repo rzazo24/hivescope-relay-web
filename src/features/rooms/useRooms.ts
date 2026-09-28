@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Relay } from 'nostr-tools/relay'
 import { RELAY_URL } from '../../lib/config'
+import { isForMe } from '../chat/mentions'
 import { loadLastSeen, markSeen, saveLastSeen, tallyUnread, withBaseline, type LastSeen } from '../../lib/unread'
 import { createRoom, fetchRoomMessages, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, tallyMessages, type Room } from '../../lib/rooms'
 
@@ -11,7 +12,7 @@ const REFRESH_MS = 60_000
 // Cada cuánto se re-evalúa qué salas ya han caducado (sin ir al relé).
 const EXPIRY_TICK_MS = 30_000
 
-export function useRooms(myPubkey: string, currentSlug: string | null) {
+export function useRooms(myPubkey: string, myAccount: string, currentSlug: string | null) {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,6 +68,12 @@ export function useRooms(myPubkey: string, currentSlug: string | null) {
   // la pestaña visible) se va marcando sola.
   const [counts, setCounts] = useState<Map<string, number>>(new Map())
   const [unread, setUnread] = useState<Map<string, number>>(new Map())
+  // De los no leídos, cuántos van dirigidos a mí (mención o respuesta).
+  const [directed, setDirected] = useState<Map<string, number>>(new Map())
+  const accountRef = useRef(myAccount)
+  useEffect(() => {
+    accountRef.current = myAccount
+  }, [myAccount])
   const seenRef = useRef<LastSeen>(loadLastSeen())
   const currentRef = useRef(currentSlug)
   useEffect(() => {
@@ -79,12 +86,14 @@ export function useRooms(myPubkey: string, currentSlug: string | null) {
       seenRef.current = next
       saveLastSeen(next)
     }
-    setUnread((prev) => {
+    const drop = (prev: Map<string, number>) => {
       if (!prev.has(slug)) return prev
       const m = new Map(prev)
       m.delete(slug)
       return m
-    })
+    }
+    setUnread(drop)
+    setDirected(drop)
   }, [])
 
   // La sala abierta se marca leída al entrar, al volver a la pestaña y al salir.
@@ -126,8 +135,13 @@ export function useRooms(myPubkey: string, currentSlug: string | null) {
           if (cur && document.visibilityState === 'visible') markRead(cur, now)
           setCounts(tallyMessages(events))
           const u = tallyUnread(events, seenRef.current, myPubkey)
-          if (cur && document.visibilityState === 'visible') u.delete(cur)
+          const d = tallyUnread(events, seenRef.current, myPubkey, (e) => isForMe(e, accountRef.current, myPubkey))
+          if (cur && document.visibilityState === 'visible') {
+            u.delete(cur)
+            d.delete(cur)
+          }
           setUnread(u)
+          setDirected(d)
         })
         .catch(() => {})
     load()
@@ -147,6 +161,9 @@ export function useRooms(myPubkey: string, currentSlug: string | null) {
               markRead(slug, event.created_at)
             } else if (seenRef.current[slug] !== undefined) {
               setUnread((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+              if (isForMe(event, accountRef.current, myPubkey)) {
+                setDirected((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+              }
             }
           },
         })
@@ -216,5 +233,5 @@ export function useRooms(myPubkey: string, currentSlug: string | null) {
     return m
   })()
 
-  return { rooms: visibleRooms, counts, unread: shownUnread, error, refresh, creating, createError, create, updating, updateError, update }
+  return { rooms: visibleRooms, counts, unread: shownUnread, directed, error, refresh, creating, createError, create, updating, updateError, update }
 }

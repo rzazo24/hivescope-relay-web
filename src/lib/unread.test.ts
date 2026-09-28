@@ -28,3 +28,13 @@ describe('unread', () => {
     expect(titleWithUnread('X', 150)).toBe('(99+) X')
   })
 })
+
+describe('tallyUnread con filtro', () => {
+  it('solo cuenta los que cumplen el filtro', () => {
+    const events = [
+      { tags: [['t', 'a']], pubkey: 'x', created_at: 11, content: 'hola @me' },
+      { tags: [['t', 'a']], pubkey: 'x', created_at: 12, content: 'otra cosa' },
+    ]
+    expect(tallyUnread(events, { a: 10 }, 'me', (e) => e.content.includes('@me')).get('a')).toBe(1)
+  })
+})

@@ -5,12 +5,17 @@ import { RELAY_URL } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { resolveHiveAccounts } from '../../lib/relay'
 import { applyDeletion } from './deletion'
+import { parseReplyTo, replyTags } from './mentions'
 
 export interface ChatMessage {
   id: string
   pubkey: string
   content: string
   createdAt: number
+  /** Id del mensaje al que responde, si es una respuesta. */
+  replyTo: string | null
+  /** Pubkeys citados (tags p): a quién va dirigido. */
+  mentioned: string[]
 }
 
 /**
@@ -81,7 +86,17 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
             if (seen.has(event.id)) return
             seen.add(event.id)
             setMessages((prev) =>
-              [...prev, { id: event.id, pubkey: event.pubkey, content: event.content, createdAt: event.created_at }].sort(
+              [
+                ...prev,
+                {
+                  id: event.id,
+                  pubkey: event.pubkey,
+                  content: event.content,
+                  createdAt: event.created_at,
+                  replyTo: parseReplyTo(event.tags),
+                  mentioned: event.tags.filter((t) => t[0] === 'p').map((t) => t[1]),
+                },
+              ].sort(
                 (a, b) => a.createdAt - b.createdAt,
               ),
             )
@@ -108,7 +123,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
   }, [slug, applyDeletionEvent])
 
   const send = useCallback(
-    async (content: string) => {
+    async (content: string, replyTo?: { id: string; pubkey: string }) => {
       const relay = relayRef.current
       if (!relay) return
 
@@ -119,7 +134,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
           {
             kind: 9,
             created_at: Math.floor(Date.now() / 1000),
-            tags: [['t', slug]],
+            tags: [['t', slug], ...(replyTo ? replyTags(replyTo) : [])],
             content,
           },
           identity.secretKey,

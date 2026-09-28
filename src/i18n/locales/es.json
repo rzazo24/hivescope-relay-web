@@ -35,6 +35,7 @@
     "messages_one": "{{count}} mensaje",
     "messages_other": "{{count}} mensajes",
     "unread": "{{count}} nuevos",
+    "directedTitle": "menciones o respuestas para ti",
     "adminPrefix": "admin:",
     "back": "< cd ..",
     "enteredTitle": "$ cd {{slug}}",
@@ -64,6 +65,10 @@
     "send": "> enviar",
     "sending": "> enviando…",
     "emoji": "emojis",
+    "reply": "responder",
+    "replyingTo": "respondiendo a {{name}}",
+    "replyCancel": "cancelar respuesta",
+    "replyMissing": "↩ mensaje anterior",
     "delete": "borrar",
     "deleteTitle": "rm mensaje",
     "deleteConfirm": "¿Borrar este mensaje? Desaparece para todos en la sala y no se puede deshacer.",
@@ -90,6 +95,10 @@
       {
         "heading": "$ salas",
         "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin (desde cualquiera de tus dispositivos vinculados a esa misma cuenta Hive), o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas. Cada sala tiene un enlace directo (chat.hivescope.xyz/r/nombre-de-sala) que puedes copiar con el botón \"copiar enlace\" dentro de la sala; al abrirlo, y con la cuenta vinculada, entras directamente. El enlace deja de funcionar cuando la sala caduca."
+      },
+      {
+        "heading": "$ menciones_respuestas",
+        "body": "Escribe @ y un nombre de cuenta para mencionar a alguien (las sugerencias salen de quienes han escrito o están en la sala; Tab o Intro eligen una). Las menciones se resaltan, y un mensaje que te menciona o responde a uno tuyo queda marcado y muestra una etiqueta @ en la lista de salas. El enlace «responder» de cada mensaje lo cita encima del tuyo. Todo forma parte del mensaje público, así que las menciones y a quién respondes las puede ver cualquiera, como el resto."
       },
       {
         "heading": "$ caducidad",

@@ -59,6 +59,7 @@ function RoomRow({
   online,
   messages,
   unread,
+  directed,
   onSelect,
   onSave,
 }: {
@@ -68,6 +69,7 @@ function RoomRow({
   online: number
   messages: number
   unread: number
+  directed: number
   onSelect: () => void
   onSave: (name: string, lifetimeSeconds: number) => Promise<boolean>
 }) {
@@ -150,6 +152,11 @@ function RoomRow({
               {t('rooms.unread', { count: unread > 99 ? '99+' : unread })}
             </span>
           )}
+          {directed > 0 && (
+            <span className="ml-1 rounded-sm border border-accent px-1.5 py-0.5 text-[10px] font-bold text-accent" title={t('rooms.directedTitle')}>
+              @{directed > 99 ? '99+' : directed}
+            </span>
+          )}
         </span>
         <span className="text-xs text-muted">
           {adminLabel}
@@ -178,7 +185,7 @@ function RoomRow({
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
   const route = useRoomRoute()
-  const { rooms, counts, unread, error, creating, createError, create, update } = useRooms(identity.publicKey, route.slug)
+  const { rooms, counts, unread, directed, error, creating, createError, create, update } = useRooms(identity.publicKey, account, route.slug)
   const online = useOnline()
   // Título de la pestaña con el total de no leídos.
   const unreadTotal = [...unread.values()].reduce((a, b) => a + b, 0)
@@ -285,6 +292,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   online={online.byRoom.get(room.slug) ?? 0}
                   messages={counts.get(room.slug) ?? 0}
                   unread={unread.get(room.slug) ?? 0}
+                  directed={directed.get(room.slug) ?? 0}
                   onSelect={() => route.open(room.slug)}
                   onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />

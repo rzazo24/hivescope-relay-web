@@ -147,6 +147,16 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    "currently expires in: Xd" so it's clear that line is status, not the
    picker. This is a point-in-time read from whenever `listRooms()` last
    ran, not a live ticking countdown — no interval/timer involved.
+   **Mentions and replies** (`src/features/chat/mentions.ts`, pure and tested)
+   need no relay support: `@account` is plain text in the kind:9 content
+   (`splitMentions`), a reply adds NIP-10 tags `['e', id, '', 'reply']` +
+   `['p', authorPubkey]` (`replyTags`). "For me" (`isForMe`) = mentions my Hive
+   account or replies to a message whose `p` is *this device's* pubkey (a reply
+   to my message from another device of mine isn't flagged). `useRooms` tallies
+   those as `directed` (the `@N` badge). In the input, Enter/Tab pick an
+   autocomplete candidate — except when the only candidate is already fully
+   typed, otherwise Enter would never send.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

@@ -231,7 +231,7 @@ export function tallyMessages(events: { tags: string[][] }[]): Map<string, numbe
   return counts
 }
 
-export type RoomMessage = { tags: string[][]; pubkey: string; created_at: number }
+export type RoomMessage = { tags: string[][]; pubkey: string; created_at: number; content: string }
 
 /** Mensajes guardados en las salas dadas: una sola consulta al relé para todas. */
 export async function fetchRoomMessages(slugs: string[]): Promise<RoomMessage[]> {
