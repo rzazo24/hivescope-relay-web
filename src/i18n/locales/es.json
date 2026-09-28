@@ -86,7 +86,16 @@
     "deleteTitle": "rm mensaje",
     "deleteConfirm": "¿Borrar este mensaje? Desaparece para todos en la sala y no se puede deshacer.",
     "deleteConfirmButton": "> borrar",
-    "deleteCancel": "cancelar"
+    "deleteCancel": "cancelar",
+    "translate": "traducir",
+    "translating": "traduciendo…",
+    "translateDownloading": "descargando el modelo de traducción… {{percent}}%",
+    "translateError": "no se pudo traducir este mensaje",
+    "translatedFrom": "traducido del {{lang}}",
+    "translateSame": "ya está en tu idioma",
+    "translateUnavailable": "tu navegador no puede traducir desde {{lang}}",
+    "translateUnknown": "no se pudo identificar el idioma",
+    "translateHide": "ocultar"
   },
   "help": {
     "trigger": "ayuda",

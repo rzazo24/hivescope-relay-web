@@ -1,5 +1,6 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { translateText, translationSupported, type TranslateResult } from '../../lib/translate'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
@@ -58,7 +59,7 @@ export function ChatRoom({
   account: string
   onBack: () => void
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { messages, connected, sending, error, send, remove } = useChatRoom(room.slug, identity)
   const online = useOnline()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
@@ -66,6 +67,31 @@ export function ChatRoom({
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [copied, setCopied] = useState(false)
+  // Traducción bajo demanda (en el dispositivo, ver lib/translate.ts): por id de mensaje.
+  const [translations, setTranslations] = useState<Record<string, { status: 'loading' | 'done' | 'error'; progress?: number; result?: TranslateResult }>>({})
+  const canTranslate = translationSupported()
+  const translate = async (msg: ChatMessage) => {
+    const set = (v: { status: 'loading' | 'done' | 'error'; progress?: number; result?: TranslateResult } | null) =>
+      setTranslations((prev) => {
+        const next = { ...prev }
+        if (v) next[msg.id] = v
+        else delete next[msg.id]
+        return next
+      })
+    set({ status: 'loading' })
+    try {
+      const result = await translateText(msg.content, i18n.resolvedLanguage ?? i18n.language, (f) => set({ status: 'loading', progress: f }))
+      set({ status: 'done', result })
+    } catch {
+      set({ status: 'error' })
+    }
+  }
+  const hideTranslation = (id: string) =>
+    setTranslations((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
   const [caret, setCaret] = useState(0)
   const [pickIndex, setPickIndex] = useState(0)
@@ -258,6 +284,15 @@ export function ChatRoom({
                 >
                   {t('chat.reply')}
                 </button>
+                {canTranslate && !isMe && !translations[msg.id] && (
+                  <button
+                    type="button"
+                    onClick={() => void translate(msg)}
+                    className="underline decoration-dotted underline-offset-2 transition hover:text-accent"
+                  >
+                    {t('chat.translate')}
+                  </button>
+                )}
                 {isMe && (
                   <button
                     type="button"
@@ -291,6 +326,27 @@ export function ChatRoom({
                   ),
                 )}
               </p>
+              {translations[msg.id] && (
+                <p className="mt-0.5 border-l-2 border-border pl-2 text-xs text-muted">
+                  {translations[msg.id].status === 'loading' &&
+                    (translations[msg.id].progress !== undefined
+                      ? t('chat.translateDownloading', { percent: Math.round((translations[msg.id].progress ?? 0) * 100) })
+                      : t('chat.translating'))}
+                  {translations[msg.id].status === 'error' && t('chat.translateError')}
+                  {translations[msg.id].status === 'done' && translations[msg.id].result && (() => {
+                    const r = translations[msg.id].result!
+                    if (r.kind === 'translated') return <><span className="text-ink">{r.text}</span> · {t('chat.translatedFrom', { lang: r.from })}</>
+                    if (r.kind === 'same-language') return t('chat.translateSame')
+                    if (r.kind === 'unavailable') return t('chat.translateUnavailable', { lang: r.from })
+                    return t('chat.translateUnknown')
+                  })()}{' '}
+                  {translations[msg.id].status !== 'loading' && (
+                    <button type="button" onClick={() => hideTranslation(msg.id)} className="underline decoration-dotted underline-offset-2 hover:text-ink">
+                      {t('chat.translateHide')}
+                    </button>
+                  )}
+                </p>
+              )}
             </div>
           )
         })}

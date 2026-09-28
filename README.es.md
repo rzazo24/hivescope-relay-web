@@ -110,6 +110,10 @@ Con dos o más salas la lista muestra un buscador (nombre o slug) y un selector 
 
 Cada persona que escribe en el chat (y cada una de la lista de conectados) muestra su foto de perfil de Hive, cargada desde `https://images.hive.blog/u/<cuenta>/avatar/small`, con una inicial de reserva. Es la única petición a terceros que hace la app para contenido, y se avisa en la sección de privacidad de la ayuda (`src/components/Avatar.tsx`, `src/lib/hiveAvatar.ts`).
 
+## Traducción de mensajes
+
+Los mensajes de los demás llevan un enlace «traducir» cuando el navegador tiene las APIs integradas Translator y LanguageDetector (Chrome/Edge de escritorio recientes). La traducción se hace en el dispositivo —no se envía nada a servicios de terceros— al idioma de la interfaz; si ya está en tu idioma, si no se reconoce o si el par no está soportado, se avisa. Donde no existen las APIs (Firefox, Safari, móvil) el enlace no se muestra. Ver `src/lib/translate.ts`.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

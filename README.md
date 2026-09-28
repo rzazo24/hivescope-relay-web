@@ -108,6 +108,10 @@ With two or more rooms the list gets a search box (name or slug) and a sort swit
 
 Each sender in the chat (and each person in the online list) shows their Hive profile picture, loaded from `https://images.hive.blog/u/<account>/avatar/small` with an initial as fallback. It is the only third-party request the app makes for content, disclosed in the help's privacy section (`src/components/Avatar.tsx`, `src/lib/hiveAvatar.ts`).
 
+## Message translation
+
+Other people's messages get a "translate" link when the browser has the built-in Translator and LanguageDetector APIs (recent desktop Chrome/Edge). Translation happens on the device — nothing is sent to a third-party service — into the UI language; already-in-your-language, unknown and unsupported pairs are reported instead. Where the APIs don't exist (Firefox, Safari, mobile) the link simply isn't shown. See `src/lib/translate.ts`.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

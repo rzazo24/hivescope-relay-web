@@ -186,6 +186,15 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    building the URL. Disclosed in the help's privacy text (the image host sees
    viewers' IPs) — keep that if you change the source.
 
+   **Message translation** (`src/lib/translate.ts`, per-message state in
+   `ChatRoom`) uses the browser's on-device `LanguageDetector` + `Translator`
+   only — deliberately no external service (message text would leave the
+   device). `translationSupported()` gates the link; `planTranslation` (pure,
+   tested) decides translate / same-language / unknown from the detector's
+   answer. It must run from a click (the first use can download a language
+   pack). Playwright's Chromium exposes the APIs but has no models, so tests
+   stub `window.Translator`/`LanguageDetector`.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other
