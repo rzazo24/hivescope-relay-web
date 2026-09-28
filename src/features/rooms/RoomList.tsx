@@ -187,7 +187,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   }, [roomMissing, replace])
 
   if (selectedRoom) {
-    return <ChatRoom room={selectedRoom} identity={identity} onBack={() => route.open(null)} />
+    return <ChatRoom room={selectedRoom} identity={identity} account={account} onBack={() => route.open(null)} />
   }
   if (route.slug !== null && rooms === null && !error) {
     return <p className="text-sm text-muted">{t('rooms.loading')}</p>

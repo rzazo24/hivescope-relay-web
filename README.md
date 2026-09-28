@@ -74,7 +74,7 @@ kick/ban capability.
 
 ## Deleting messages
 
-Each of your messages has a "delete" link (with confirmation). It sends a NIP-09 deletion signed with your key: the relay removes the message and it disappears live for everyone in the room. It only works from the browser/device that sent it, and it can't recall copies anyone already saw or saved.
+Each of your messages has a "delete" link (with confirmation). It sends a NIP-09 deletion signed with your key: the relay removes the message and it disappears live for everyone in the room. It works from any device linked to the same Hive account, and it can't recall copies anyone already saw or saved.
 
 ## Room links
 

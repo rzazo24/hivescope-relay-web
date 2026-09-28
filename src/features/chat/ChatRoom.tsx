@@ -7,6 +7,7 @@ import { ConfirmModal } from '../../components/ConfirmModal'
 import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
+import { isOwnMessage } from './deletion'
 import { useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
@@ -20,10 +21,12 @@ function formatTime(unixSeconds: number) {
 export function ChatRoom({
   room,
   identity,
+  account,
   onBack,
 }: {
   room: Room
   identity: NostrIdentity
+  account: string
   onBack: () => void
 }) {
   const { t } = useTranslation()
@@ -105,7 +108,9 @@ export function ChatRoom({
         {connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.empty')}</p>}
 
         {messages.map((msg) => {
-          const isMe = msg.pubkey === identity.publicKey
+          // Mío = este pubkey u otro dispositivo de mi misma cuenta Hive (el relé
+          // deja borrar en ambos casos, ver NewDeletionOutcome).
+          const isMe = isOwnMessage(msg.pubkey, identity.publicKey, account, senderNames)
           return (
             <div key={msg.id}>
               <div className="flex items-baseline gap-2 text-[11px] text-muted">

@@ -191,15 +191,18 @@ render with the OS emoji font, so they look different per platform.
 
    **Deleting your own messages**: `remove(id)` in `useChatRoom` publishes a
    NIP-09 `kind:5` (`e` tag = message id, `k` = 9) signed with this device's
-   key; hivescope-relay (khatru) only honors it when the pubkey matches the
-   message author (verified: a different key gets "you are not the author").
+   key; hivescope-relay only honors it for the message's author (verified: a
+   different account gets "you are not the author").
    The hook also subscribes to `kind:5` with `since = now` so a deletion
    removes the message live for everyone in the room; `applyDeletion`
    (`deletion.ts`) re-checks author == requester client-side instead of
-   trusting the relay. Because the relay compares *pubkeys*, "delete" only
-   shows on messages sent from this same browser/device (`isMe` is by pubkey),
-   not ones you sent from another device of the same Hive account (unlike room
-   ownership, which is per account). It's a request, not a recall: the message
+   trusting the relay. Deletion is **per Hive account** like room ownership:
+   the relay (`NewDeletionOutcome`, via khatru's `OverwriteDeletionOutcome`)
+   also accepts a `kind:5` from another pubkey linked to the same account,
+   so `isOwnMessage` (pubkey or same account, using the accounts already
+   resolved for sender names) decides who sees "delete" and the "you" label,
+   and the hook resolves accounts before applying a deletion that comes from
+   another device. It's a request, not a recall: the message
    was public from the moment it was sent (the help panel says so).
 
 **Styling**: Tailwind v4, config-free — tokens are defined directly in

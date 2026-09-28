@@ -76,7 +76,7 @@ expulsar/silenciar cuentas.
 
 ## Borrar mensajes
 
-Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrado NIP-09 firmado con tu clave: el relé elimina el mensaje y desaparece en vivo para todos en la sala. Solo funciona desde el navegador/dispositivo que lo envió, y no puede recuperar copias que alguien ya haya visto o guardado.
+Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrado NIP-09 firmado con tu clave: el relé elimina el mensaje y desaparece en vivo para todos en la sala. Funciona desde cualquier dispositivo vinculado a la misma cuenta Hive, y no puede recuperar copias que alguien ya haya visto o guardado.
 
 ## Enlaces a salas
 

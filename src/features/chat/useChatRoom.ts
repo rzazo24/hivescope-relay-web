@@ -3,6 +3,7 @@ import { Relay } from 'nostr-tools/relay'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { RELAY_URL } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
+import { resolveHiveAccounts } from '../../lib/relay'
 import { applyDeletion } from './deletion'
 
 export interface ChatMessage {
@@ -23,6 +24,26 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const relayRef = useRef<Relay | null>(null)
+  const messagesRef = useRef<ChatMessage[]>([])
+  messagesRef.current = messages
+
+  // Aplica un borrado: al instante para los mensajes del mismo pubkey, y --tras
+  // resolver las cuentas Hive-- también para los de otros dispositivos de la
+  // misma cuenta, que es lo que acepta el relé.
+  const applyDeletionEvent = useCallback((event: { pubkey: string; tags: string[][] }) => {
+    setMessages((prev) => applyDeletion(prev, event))
+
+    const targets = new Set(event.tags.filter((t) => t[0] === 'e').map((t) => t[1]))
+    const others = messagesRef.current.filter((m) => targets.has(m.id) && m.pubkey !== event.pubkey).map((m) => m.pubkey)
+    if (others.length === 0) return
+    void resolveHiveAccounts([event.pubkey, ...others]).then((accounts) => {
+      const requester = accounts.get(event.pubkey)?.toLowerCase()
+      if (!requester) return
+      setMessages((prev) =>
+        applyDeletion(prev, event, (author, req) => author === req || accounts.get(author)?.toLowerCase() === requester),
+      )
+    })
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -70,7 +91,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
         // (since = ahora): lo ya borrado antes de entrar no llega en el kind 9.
         relay.subscribe([{ kinds: [5], since: Math.floor(Date.now() / 1000) }], {
           onevent(event) {
-            setMessages((prev) => applyDeletion(prev, event))
+            applyDeletionEvent(event)
           },
         })
       })
@@ -82,7 +103,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
       relayRef.current?.close()
       relayRef.current = null
     }
-  }, [slug])
+  }, [slug, applyDeletionEvent])
 
   const send = useCallback(
     async (content: string) => {
@@ -132,14 +153,14 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
           identity.secretKey,
         )
         await relay.publish(event)
-        setMessages((prev) => applyDeletion(prev, event))
+        applyDeletionEvent(event)
         return true
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
         return false
       }
     },
-    [identity],
+    [identity, applyDeletionEvent],
   )
 
   return { messages, connected, sending, error, send, remove }
