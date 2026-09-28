@@ -5,12 +5,28 @@ export interface KeychainSignBufferResponse {
   error?: string
 }
 
+export interface KeychainBroadcastResponse {
+  success: boolean
+  result?: unknown
+  message?: string
+  error?: string
+}
+
+/** Una operación cruda de la blockchain de Hive, en el formato [nombre, payload] que espera broadcast_transaction. */
+export type HiveOperation = [string, Record<string, unknown>]
+
 interface HiveKeychainApi {
   requestSignBuffer(
     account: string,
     message: string,
     keyType: 'Posting' | 'Active' | 'Memo',
     callback: (response: KeychainSignBufferResponse) => void,
+  ): void
+  requestBroadcast(
+    account: string,
+    operations: HiveOperation[],
+    keyType: 'Posting' | 'Active',
+    callback: (response: KeychainBroadcastResponse) => void,
   ): void
 }
 
@@ -70,6 +86,29 @@ export function requestHiveSignature(account: string, message: string): Promise<
         resolve(response.result)
       } else {
         reject(new Error(response.message ?? response.error ?? 'Firma cancelada o fallida'))
+      }
+    })
+  })
+}
+
+/**
+ * Pide a Hive Keychain que firme y transmita operations a la blockchain de
+ * Hive con la clave posting de account. A diferencia de requestHiveSignature
+ * (que solo firma un mensaje para demostrar control de la cuenta), esto
+ * publica de verdad en la cadena -- lo usa publishRoomSnap en hiveSnaps.ts.
+ */
+export function requestHiveBroadcast(account: string, operations: HiveOperation[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window.hive_keychain === 'undefined') {
+      reject(new Error('Hive Keychain no está disponible en esta página'))
+      return
+    }
+
+    window.hive_keychain.requestBroadcast(account, operations, 'Posting', (response) => {
+      if (response.success) {
+        resolve()
+      } else {
+        reject(new Error(response.message ?? response.error ?? 'Publicación cancelada o fallida'))
       }
     })
   })

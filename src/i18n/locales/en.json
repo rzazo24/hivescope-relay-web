@@ -41,7 +41,10 @@
     "cancel": "cancel",
     "editError": "couldn't save — you may no longer be this room's admin",
     "lifetimePrompt": "expires in:",
-    "currentlyExpiresIn": "currently expires in:"
+    "currentlyExpiresIn": "currently expires in:",
+    "snapPosting": "$ posting a snap about this room to Hive…",
+    "snapDone": "[ok] snap posted to Hive",
+    "snapError": "[!] room created, but couldn't post the Hive snap —"
   },
   "chat": {
     "connecting": "$ connecting…",
@@ -76,6 +79,10 @@
       {
         "heading": "$ expiration",
         "body": "Whoever creates or edits a room picks how long it lasts (1 hour, 24 hours, 7, 30, or 90 days) — once that time passes with no updates, the room and its messages are removed (the 1h/24h options are best-effort, cleanup checks run about once an hour so a short-lived room may stick around up to an hour past its mark). Renaming it, or any other edit, resets the clock from that moment with whatever duration you pick then — there's no separate \"renew\" action, editing is enough. Each room in the list shows how long it has left, next to its admin."
+      },
+      {
+        "heading": "$ hive_snaps",
+        "body": "When you create a room, HiveScope also asks Hive Keychain to post a short \"snap\" about it on Hive — a reply to the daily @peak.snaps thread — so the room gets announced on the blockchain. It's a real, permanent Hive post that can't be deleted, even if the room itself expires in an hour. If you cancel the Keychain popup or the snap fails, the room is still created, you just won't get the announcement."
       },
       {
         "heading": "$ theme",

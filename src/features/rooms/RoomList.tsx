@@ -2,7 +2,8 @@ import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
-import { SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
+import { SITE_URL, SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
+import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
@@ -158,6 +159,8 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
+  const [snapStatus, setSnapStatus] = useState<'idle' | 'posting' | 'error' | 'done'>('idle')
+  const [snapError, setSnapError] = useState<string | null>(null)
   const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
   // Cosmético: el relé es quien de verdad decide si la edición se acepta
   // (ver NewRoomMetaPolicy/HIVESCOPE_SUPERADMIN_HIVE_ACCOUNT); esto solo
@@ -172,8 +175,22 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
     e.preventDefault()
     const slug = slugifyRoom(newRoomName)
     if (!slug) return
-    const ok = await create(slug, newRoomName.trim(), identity.publicKey, identity.secretKey, newRoomLifetimeSeconds)
-    if (ok) setNewRoomName('')
+    const trimmedName = newRoomName.trim()
+    const ok = await create(slug, trimmedName, identity.publicKey, identity.secretKey, newRoomLifetimeSeconds)
+    if (!ok) return
+    setNewRoomName('')
+
+    // La sala ya existe en Nostr aunque esto falle -- el snap es un extra,
+    // no una condición para que la creación de la sala cuente como exitosa.
+    setSnapStatus('posting')
+    setSnapError(null)
+    try {
+      await publishRoomSnap(account, trimmedName, SITE_URL)
+      setSnapStatus('done')
+    } catch (err) {
+      setSnapStatus('error')
+      setSnapError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   return (
@@ -232,6 +249,13 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         </div>
         <LifetimeSelector value={newRoomLifetimeSeconds} onChange={setNewRoomLifetimeSeconds} disabled={creating} />
         {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {createError}</p>}
+        {snapStatus === 'posting' && <p className="text-xs text-muted">{t('rooms.snapPosting')}</p>}
+        {snapStatus === 'done' && <p className="text-xs text-success">{t('rooms.snapDone')}</p>}
+        {snapStatus === 'error' && (
+          <p className="text-xs text-muted">
+            {t('rooms.snapError')} {snapError}
+          </p>
+        )}
       </form>
     </div>
   )

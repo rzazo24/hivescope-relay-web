@@ -87,6 +87,10 @@ reinicia el plazo con la duración que se elija en ese momento; no hay un botón
 "renovar" aparte, con editarla alcanza. Cada sala del listado muestra cuánto
 le queda.
 
+## Snaps de Hive
+
+Crear una sala también pide a Hive Keychain que publique un "snap" corto (una respuesta al post contenedor diario de `@peak.snaps`) anunciándola en Hive. Es permanente en la cadena y de mejor esfuerzo: si falla o se cancela, la sala se crea igualmente. Ver `src/lib/hiveSnaps.ts`.
+
 ## La vinculación Hive↔Nostr, resumida
 
 Vincularse publica un evento `kind:30078` (`d=hive-link`) cuyo tag

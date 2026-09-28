@@ -41,7 +41,10 @@
     "cancel": "cancelar",
     "editError": "no se pudo guardar — puede que ya no seas el admin de esta sala",
     "lifetimePrompt": "caduca en:",
-    "currentlyExpiresIn": "caduca actualmente en:"
+    "currentlyExpiresIn": "caduca actualmente en:",
+    "snapPosting": "$ publicando un snap de esta sala en Hive…",
+    "snapDone": "[ok] snap publicado en Hive",
+    "snapError": "[!] sala creada, pero no se pudo publicar el snap en Hive —"
   },
   "chat": {
     "connecting": "$ conectando…",
@@ -76,6 +79,10 @@
       {
         "heading": "$ caducidad",
         "body": "Quien crea o edita una sala elige cuánto dura (1 hora, 24 horas, 7, 30 o 90 días) — al pasar ese tiempo sin actualizaciones, la sala y sus mensajes se eliminan (las opciones de 1h/24h son orientativas, la limpieza se revisa más o menos cada hora, así que una sala de vida corta puede quedar hasta una hora más de lo esperado). Renombrarla, o cualquier otra edición, reinicia el plazo desde ese momento con la duración que elijas entonces — no hay una acción de \"renovar\" aparte, con editarla alcanza. Cada sala del listado muestra cuánto le queda, junto a su admin."
+      },
+      {
+        "heading": "$ snaps_hive",
+        "body": "Al crear una sala, HiveScope también pide a Hive Keychain que publique un \"snap\" corto sobre ella en Hive — una respuesta al hilo diario de @peak.snaps — para anunciarla en la blockchain. Es una publicación real y permanente de Hive que no se puede borrar, aunque la sala expire en una hora. Si cancelas la ventana de Keychain o el snap falla, la sala se crea igualmente, solo que sin el anuncio."
       },
       {
         "heading": "$ tema",

@@ -85,6 +85,10 @@ whatever duration you pick at that moment; there's no separate "renew"
 button, editing is enough. Each room in the list shows how long it has
 left.
 
+## Hive snaps
+
+Creating a room also asks Hive Keychain to post a short "snap" (a reply to the daily `@peak.snaps` container post) announcing it on Hive. It's permanent on-chain and best-effort: if it fails or is cancelled, the room is still created. See `src/lib/hiveSnaps.ts`.
+
 ## The Hive↔Nostr link, in short
 
 Signing in publishes a `kind:30078` event (`d=hive-link`) whose `hive_sig`
