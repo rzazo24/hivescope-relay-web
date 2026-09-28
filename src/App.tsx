@@ -20,7 +20,7 @@ function App() {
   // que crezca mucho. Salas/chat sí se benefician de más ancho en pantallas
   // grandes (lista de salas, mensajes), así que su tope crece más.
   const widthClass = linked
-    ? 'max-w-md sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl'
+    ? 'max-w-md sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-screen-2xl'
     : 'max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl'
 
   return (
