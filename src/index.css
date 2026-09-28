@@ -65,6 +65,42 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Scrollbars con el estilo de la app: finas, sin pista visible, pulgar en el
+   color del borde que se ilumina con el acento al pasar el ratón. Usa los
+   mismos tokens que el resto, así que sigue el tema claro/oscuro solo.
+   Los ::-webkit-scrollbar (Chrome, Edge, Safari) permiten el hover con el
+   acento; scrollbar-color/-width son el estándar pero, si se declaran, Chrome
+   ignora los ::-webkit-scrollbar -- por eso van en @supports not, solo para
+   Firefox. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @keyframes blink {
   0%,
   49% {
