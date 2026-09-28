@@ -25,7 +25,9 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
   const [error, setError] = useState<string | null>(null)
   const relayRef = useRef<Relay | null>(null)
   const messagesRef = useRef<ChatMessage[]>([])
-  messagesRef.current = messages
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
 
   // Aplica un borrado: al instante para los mensajes del mismo pubkey, y --tras
   // resolver las cuentas Hive-- también para los de otros dispositivos de la

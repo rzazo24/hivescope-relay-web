@@ -147,6 +147,18 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    "currently expires in: Xd" so it's clear that line is status, not the
    picker. This is a point-in-time read from whenever `listRooms()` last
    ran, not a live ticking countdown — no interval/timer involved.
+   **The room list is live** (`useRooms.ts`): besides the one-shot
+   `listRooms()` for the initial state, it keeps a subscription
+   (`kinds:[30078], limit:0` = only new events) and merges each arriving room
+   with `mergeRoom` (add, or replace if newer, else same list), so rooms
+   created/edited from any device show up without reloading. Two things the
+   subscription can't give you: (1) when the relay's `roomsweep` deletes an
+   expired or superseded room it does a raw `DeleteEvent`, no NIP-09 event, so
+   nobody is notified — hence `listRooms()` re-runs every 60 s and a 30 s tick
+   re-evaluates `isRoomExpired` to hide expired rooms client-side right away;
+   (2) events that arrive while the initial list is still loading are ignored
+   (the list or the next refresh covers them).
+
    **Hive snaps, opt-in** (`src/lib/hiveSnaps.ts`): after a room is
    created, `RoomList` only *offers* to share it (`snapOffer`); nothing is
    posted unless the user presses "share on Hive". Then `publishRoomSnap`

@@ -195,3 +195,28 @@ export function canManageRoom(
   if (!mine) return false
   return [room.ownerPubkey, room.admin].some((pk) => accountsByPubkey.get(pk)?.toLowerCase() === mine)
 }
+
+/**
+ * Incorpora a la lista una versión de sala que llegó en vivo: la añade si es
+ * nueva, reemplaza a la que ya estaba si es más reciente (mismo criterio que
+ * listRooms), y devuelve la MISMA lista si no cambia nada (evita renders de
+ * más). Exportada para poder probarla.
+ */
+export function mergeRoom(rooms: Room[], incoming: Room): Room[] {
+  const i = rooms.findIndex((r) => r.slug === incoming.slug)
+  if (i === -1) return [...rooms, incoming]
+  if (!isNewerRoom(incoming, rooms[i])) return rooms
+  const next = rooms.slice()
+  next[i] = incoming
+  return next
+}
+
+/**
+ * ¿Ya pasó la caducidad de la sala? El relé la borra con su barrido (cada
+ * pocos minutos) y ese borrado no se avisa a los clientes, así que la lista
+ * las oculta por su cuenta en cuanto pasan. Sin dato de expiración (salas
+ * anteriores a que existiera el tag) nunca se consideran caducadas.
+ */
+export function isRoomExpired(room: Pick<Room, 'expiresAt'>, now: number = Math.floor(Date.now() / 1000)): boolean {
+  return room.expiresAt > 0 && room.expiresAt <= now
+}

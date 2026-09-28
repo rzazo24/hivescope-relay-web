@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canManageRoom, formatTimeRemaining, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
+import { canManageRoom, formatTimeRemaining, isRoomExpired, mergeRoom, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -211,5 +211,39 @@ describe('canManageRoom', () => {
     expect(canManageRoom(room, 'phone-pk', 'carla', accounts)).toBe(false)
     expect(canManageRoom(room, 'phone-pk', 'ana', new Map())).toBe(false)
     expect(canManageRoom(room, 'phone-pk', '', accounts)).toBe(false)
+  })
+})
+
+describe('mergeRoom', () => {
+  const room = (slug: string, createdAt: number, name = slug): Room => ({
+    slug, name, admin: 'a', ownerPubkey: 'o', createdAt, id: `id-${createdAt}`, expiresAt: 0,
+  })
+
+  it('adds a room that is not in the list yet', () => {
+    expect(mergeRoom([room('a', 1)], room('b', 2)).map((r) => r.slug)).toEqual(['a', 'b'])
+  })
+
+  it('replaces the existing room with a newer version', () => {
+    const out = mergeRoom([room('a', 1, 'viejo')], room('a', 5, 'nuevo'))
+    expect(out).toHaveLength(1)
+    expect(out[0].name).toBe('nuevo')
+  })
+
+  it('returns the very same list when the incoming version is older or identical', () => {
+    const list = [room('a', 5)]
+    expect(mergeRoom(list, room('a', 1))).toBe(list)
+    expect(mergeRoom(list, room('a', 5))).toBe(list)
+  })
+})
+
+describe('isRoomExpired', () => {
+  it('is true once the deadline has passed (or is exactly now)', () => {
+    expect(isRoomExpired({ expiresAt: 100 }, 101)).toBe(true)
+    expect(isRoomExpired({ expiresAt: 100 }, 100)).toBe(true)
+  })
+
+  it('is false before the deadline and for rooms with no expiration data', () => {
+    expect(isRoomExpired({ expiresAt: 100 }, 99)).toBe(false)
+    expect(isRoomExpired({ expiresAt: 0 }, 1_000_000)).toBe(false)
   })
 })
