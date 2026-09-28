@@ -18,8 +18,10 @@ import { resolveHiveAccounts } from '../lib/relay'
 // corto: nuestro último latido pudo salir justo ANTES de que el recién llegado
 // se suscribiera, y entonces no lo ha visto.
 const RESPOND_GUARD_MS = 1000
+// Cuánto esperar antes de volver a pedir la cuenta de un pubkey que no se resolvió.
+const RETRY_MS = 15_000
 
-const EMPTY: OnlineCounts = { total: 0, byRoom: new Map() }
+const EMPTY: OnlineCounts = { total: 0, byRoom: new Map(), people: [] }
 const OnlineContext = createContext<OnlineCounts>(EMPTY)
 export const OnlineProvider = OnlineContext.Provider
 
@@ -59,6 +61,7 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
     let relay: Relay | null = null
     const book: PresenceBook = new Map()
     const accounts = new Map<string, string>()
+    const askedAt = new Map<string, number>()
     let lastBeatAt = 0
     let respondTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -67,15 +70,20 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
       pruneStale(book, now)
       setCounts(countOnline(book, now, (pk) => accounts.get(pk) || undefined))
       // resuelve en segundo plano las cuentas que faltan (una consulta en lote,
-      // con caché); al llegar, se recuenta para fusionar dispositivos de una cuenta
-      const missing = [...book.keys()].filter((pk) => !accounts.has(pk))
+      // con caché); al llegar, se recuenta para fusionar dispositivos de una
+      // cuenta. Un pubkey sin resolver se reintenta pasado RETRY_MS: la consulta
+      // puede haber fallado (rate limit, corte) y no debe quedarse como
+      // "desconocido" toda la sesión.
+      const missing = [...book.keys()].filter((pk) => !accounts.get(pk) && now - (askedAt.get(pk) ?? 0) > RETRY_MS)
       if (missing.length > 0) {
-        for (const pk of missing) accounts.set(pk, '') // marca "en curso" para no repetir
-        void resolveHiveAccounts(missing).then((found) => {
-          if (cancelled) return
-          for (const pk of missing) accounts.set(pk, found.get(pk) ?? '')
-          setCounts(countOnline(book, Date.now(), (pk) => accounts.get(pk) || undefined))
-        })
+        for (const pk of missing) askedAt.set(pk, now)
+        void resolveHiveAccounts(missing)
+          .then((found) => {
+            if (cancelled) return
+            for (const pk of missing) if (found.has(pk)) accounts.set(pk, found.get(pk)!)
+            setCounts(countOnline(book, Date.now(), (pk) => accounts.get(pk) || undefined))
+          })
+          .catch(() => {})
       }
     }
 

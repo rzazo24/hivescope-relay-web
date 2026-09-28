@@ -72,11 +72,20 @@ export async function resolveHiveAccounts(pubkeys: string[]): Promise<Map<string
   if (uncached.length === 0) return result
 
   const relay = await Relay.connect(RELAY_URL)
+  let failed = false
   try {
     await new Promise<void>((resolve) => {
       const seen = new Set<string>()
 
       const sub = relay.subscribe([{ kinds: [30078], authors: uncached, limit: uncached.length * 5 }], {
+        // Si el relé cierra la suscripción sin EOSE (por ejemplo por rate limit)
+        // no se sabe nada de esos pubkeys: se sigue sin cachearlos como "sin
+        // cuenta" para que se puedan volver a pedir. Sin esto la promesa no se
+        // resolvía nunca.
+        onclose() {
+          failed = true
+          resolve()
+        },
         onevent(event) {
           const dTag = event.tags.find((t) => t[0] === 'd')?.[1]
           if (dTag !== 'hive-link') return
@@ -99,7 +108,9 @@ export async function resolveHiveAccounts(pubkeys: string[]): Promise<Map<string
   }
 
   // lo que se pidió y no apareció, también se cachea (como "sin cuenta") para
-  // no volver a preguntarle al relé por lo mismo en cada render.
+  // no volver a preguntarle al relé por lo mismo en cada render -- salvo que la
+  // consulta fallara, porque entonces no sabemos si tienen cuenta o no.
+  if (failed) return result
   for (const pk of uncached) {
     if (!hiveAccountCache.has(pk)) hiveAccountCache.set(pk, null)
   }

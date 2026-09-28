@@ -172,6 +172,14 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    until their next beat, so every client answers a *new* pubkey with its own
    beat after a random 0.3–2 s (skipped if it beat < 1 s ago; the guard must be
    short because the last beat may predate the newcomer's subscription).
+   `OnlineBadge` is a plain label on room rows (they're already a button) and a
+   button with a dropdown elsewhere: the top bar lists everyone with the
+   room(s) they're in (`showRooms`), the room header lists just that room
+   (`peopleInRoom`); people are `@account` (with "(you)"), or a short pubkey
+   until the account resolves. Account resolution can fail transiently
+   (relay REQ rate limit closes the subscription), so `resolveHiveAccounts`
+   resolves on `onclose` *without* caching the miss as "no account" (it used
+   to hang forever), and the hook retries unresolved pubkeys every 15 s.
    Time is local receipt time, not event `created_at`. Only linked accounts
    announce, so unlinked visitors are invisible and uncounted. Verified with
    several browser contexts against a local relay: totals, per-room counts,

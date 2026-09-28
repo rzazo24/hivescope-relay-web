@@ -6,6 +6,7 @@ import type { Room } from '../../lib/rooms'
 import { ConfirmModal } from '../../components/ConfirmModal'
 import { OnlineBadge } from '../../components/OnlineBadge'
 import { useOnline } from '../../hooks/usePresence'
+import { peopleInRoom } from '../../lib/presence'
 import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
@@ -94,7 +95,7 @@ export function ChatRoom({
             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
             <span className="truncate">{room.name}</span>
           </span>
-          <OnlineBadge count={online.byRoom.get(room.slug) ?? 0} />
+          <OnlineBadge count={online.byRoom.get(room.slug) ?? 0} people={peopleInRoom(online.people, room.slug)} myAccount={account} />
         </div>
       </div>
 

@@ -80,7 +80,14 @@ function App() {
           >
             {t('help.trigger')}
           </button>
-          {linked && <OnlineBadge count={online.total} />}
+          {linked && (
+            <OnlineBadge
+              count={online.total}
+              people={online.people}
+              myAccount={linkStatus.state === 'linked' ? linkStatus.account : ''}
+              showRooms
+            />
+          )}
           <ThemeSwitcher />
           <LanguageSwitcher />
         </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countOnline, pruneStale, type PresenceBook, recordBeat, STALE_MS } from './presence'
+import { countOnline, peopleInRoom, pruneStale, type PresenceBook, recordBeat, STALE_MS } from './presence'
 
 const none = () => undefined
 
@@ -77,5 +77,35 @@ describe('countOnline', () => {
   it('ignores stale beats', () => {
     const book: PresenceBook = new Map([['a', { slug: 'general', at: now - STALE_MS - 1 }]])
     expect(countOnline(book, now, none).total).toBe(0)
+  })
+})
+
+describe('countOnline people list', () => {
+  const now = 100_000
+
+  it('lists each person once with their accounts sorted, unresolved pubkeys last', () => {
+    const book: PresenceBook = new Map([
+      ['pk-z', { slug: null, at: now }],
+      ['b1', { slug: 'general', at: now }],
+      ['a1', { slug: 'general', at: now }],
+      ['a2', { slug: 'otra', at: now }],
+    ])
+    const accounts: Record<string, string> = { a1: 'Ana', a2: 'ana', b1: 'bea' }
+    const { people, total } = countOnline(book, now, (pk) => accounts[pk])
+    expect(total).toBe(3)
+    expect(people.map((p) => p.account)).toEqual(['ana', 'bea', null])
+    expect(people[0].rooms).toEqual(['general', 'otra'])
+    expect(people[2].key).toBe('pk-z')
+  })
+
+  it('peopleInRoom returns only those with a device in that room', () => {
+    const book: PresenceBook = new Map([
+      ['a', { slug: 'general', at: now }],
+      ['b', { slug: 'otra', at: now }],
+      ['c', { slug: null, at: now }],
+    ])
+    const { people } = countOnline(book, now, (pk) => ({ a: 'ana', b: 'bea', c: 'carla' })[pk])
+    expect(peopleInRoom(people, 'general').map((p) => p.account)).toEqual(['ana'])
+    expect(peopleInRoom(people, 'nada')).toEqual([])
   })
 })

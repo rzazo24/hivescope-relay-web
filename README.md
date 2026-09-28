@@ -78,7 +78,7 @@ Each of your messages has a "delete" link (with confirmation). It sends a NIP-09
 
 ## Online counter
 
-The people icon shows how many Hive accounts are online, in total (top bar), per room (room list) and in the current room. Linked clients send ephemeral heartbeats saying which room they're in; nothing is stored, and two devices of the same account count once.
+The people icon shows how many Hive accounts are online, in total (top bar), per room (room list) and in the current room; click it in the top bar or a room header to list who is online. Linked clients send ephemeral heartbeats saying which room they're in; nothing is stored, and two devices of the same account count once.
 
 ## Room links
 

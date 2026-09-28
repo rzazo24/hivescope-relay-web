@@ -80,7 +80,7 @@ Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrad
 
 ## Contador de conectados
 
-El icono de personas muestra cuántas cuentas Hive están en línea: en total (barra superior), por sala (lista de salas) y en la sala actual. Los clientes vinculados envían latidos efímeros indicando en qué sala están; no se guarda nada, y dos dispositivos de la misma cuenta cuentan una vez.
+El icono de personas muestra cuántas cuentas Hive están en línea: en total (barra superior), por sala (lista de salas) y en la sala actual; púlsalo en la barra superior o en la cabecera de una sala para ver la lista de quién está en línea. Los clientes vinculados envían latidos efímeros indicando en qué sala están; no se guarda nada, y dos dispositivos de la misma cuenta cuentan una vez.
 
 ## Enlaces a salas
 
