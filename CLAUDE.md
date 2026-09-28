@@ -165,6 +165,15 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    newer than their last beat arrives. Needs the relay to accept the tag
    (deployed with the relay commit "allow a typing tag").
 
+   **Browser notifications** (`src/lib/notifications.ts`, opt-in switch in
+   `App.tsx`): `useRooms`' live kind:9 subscription calls `onDirected` for each
+   new message that `isForMe`; `RoomList` resolves the sender and calls
+   `showNotification`, which only fires with the preference on, permission
+   granted and the tab hidden/unfocused. There is deliberately no push — no
+   backend. `Notification.requestPermission` needs a user gesture, hence the
+   button. Tested by stubbing `Notification` and `document.visibilityState` in
+   Playwright (headless can't show real ones).
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

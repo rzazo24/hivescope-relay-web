@@ -12,7 +12,13 @@ const REFRESH_MS = 60_000
 // Cada cuánto se re-evalúa qué salas ya han caducado (sin ir al relé).
 const EXPIRY_TICK_MS = 30_000
 
-export function useRooms(myPubkey: string, myAccount: string, currentSlug: string | null) {
+export function useRooms(
+  myPubkey: string,
+  myAccount: string,
+  currentSlug: string | null,
+  /** Se llama con cada mensaje nuevo (en vivo) que te menciona o responde a uno tuyo. */
+  onDirected?: (event: { pubkey: string; content: string; slug: string }) => void,
+) {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -70,6 +76,10 @@ export function useRooms(myPubkey: string, myAccount: string, currentSlug: strin
   const [unread, setUnread] = useState<Map<string, number>>(new Map())
   // De los no leídos, cuántos van dirigidos a mí (mención o respuesta).
   const [directed, setDirected] = useState<Map<string, number>>(new Map())
+  const onDirectedRef = useRef(onDirected)
+  useEffect(() => {
+    onDirectedRef.current = onDirected
+  }, [onDirected])
   const accountRef = useRef(myAccount)
   useEffect(() => {
     accountRef.current = myAccount
@@ -157,6 +167,7 @@ export function useRooms(myPubkey: string, myAccount: string, currentSlug: strin
             if (!slug) return
             setCounts((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
             if (event.pubkey === myPubkey) return
+            if (isForMe(event, accountRef.current, myPubkey)) onDirectedRef.current?.({ pubkey: event.pubkey, content: event.content, slug })
             if (slug === currentRef.current && document.visibilityState === 'visible') {
               markRead(slug, event.created_at)
             } else if (seenRef.current[slug] !== undefined) {

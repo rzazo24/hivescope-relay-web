@@ -10,6 +10,8 @@ import { LinkScreen } from './features/link/LinkScreen'
 import { useHiveLink } from './features/link/useHiveLink'
 import { RoomList } from './features/rooms/RoomList'
 import { OnlineProvider, usePresence } from './hooks/usePresence'
+import { useNotifyState } from './hooks/useNotifyState'
+import { setNotifyEnabled } from './lib/notifications'
 import { useRoomRoute } from './hooks/useRoomRoute'
 
 function App() {
@@ -21,6 +23,7 @@ function App() {
   // cuentas hay en línea (en total, por sala en la lista y en la cabecera).
   const { slug: currentRoom } = useRoomRoute()
   const online = usePresence(identity, currentRoom, linked)
+  const notify = useNotifyState()
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   // La pantalla de vinculación es solo un formulario chico: no hace falta
@@ -80,6 +83,18 @@ function App() {
           >
             {t('help.trigger')}
           </button>
+          {linked && notify !== 'unsupported' && (
+            <button
+              type="button"
+              onClick={() => void setNotifyEnabled(notify !== 'on')}
+              disabled={notify === 'blocked'}
+              aria-pressed={notify === 'on'}
+              title={notify === 'blocked' ? t('notify.blocked') : t('notify.title')}
+              className={`text-xs underline decoration-dotted underline-offset-2 disabled:no-underline disabled:opacity-50 ${notify === 'on' ? 'text-accent' : 'text-muted hover:text-ink'}`}
+            >
+              {notify === 'on' ? t('notify.on') : t('notify.off')}
+            </button>
+          )}
           {linked && (
             <OnlineBadge
               count={online.total}

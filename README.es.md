@@ -98,6 +98,10 @@ Escribe `@cuenta` para mencionar a alguien (autocompletado con la gente de la sa
 
 Mientras escribes, el cliente envía (como mucho cada 4 s) un latido de presencia con un tag `typing`; los demás de la sala ven «@nombre está escribiendo…» durante 5 s (desaparece en cuanto llega su mensaje). Requiere que el relé acepte ese tag. Ver `typingByRoom` en `src/lib/presence.ts`.
 
+## Notificaciones del navegador
+
+Un interruptor opcional «avisos» en la barra superior muestra una notificación del navegador cuando un mensaje te menciona o responde a uno tuyo con la pestaña en segundo plano; al pulsarla se abre la sala. El permiso se pide una vez, la elección se recuerda por dispositivo y solo funciona con la app abierta (no hay push: es una SPA sin backend). Se oculta donde el navegador no tiene la API Notification (p. ej. iOS Safari, la mayoría de navegadores integrados). Ver `src/lib/notifications.ts`.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

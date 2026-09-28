@@ -131,5 +131,11 @@
     "online": "{{count}} en línea",
     "you": "tú",
     "empty": "todavía no hay nadie más"
+  },
+  "notify": {
+    "on": "🔔 avisos sí",
+    "off": "🔕 avisos no",
+    "title": "Avisos del navegador cuando alguien te menciona o te responde con esta pestaña en segundo plano",
+    "blocked": "Los avisos están bloqueados para este sitio en los ajustes del navegador"
   }
 }

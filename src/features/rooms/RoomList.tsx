@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
@@ -10,6 +10,9 @@ import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { roomUrl } from '../../lib/roomRoute'
 import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
+import { quoteSnippet } from '../chat/mentions'
+import { showNotification } from '../../lib/notifications'
+import { resolveHiveAccounts } from '../../lib/relay'
 import { titleWithUnread } from '../../lib/unread'
 import { useRooms } from './useRooms'
 
@@ -185,7 +188,24 @@ function RoomRow({
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
   const route = useRoomRoute()
-  const { rooms, counts, unread, directed, error, creating, createError, create, update } = useRooms(identity.publicKey, account, route.slug)
+  const { open: openRoom } = route
+  const onDirected = useCallback(
+    (m: { pubkey: string; content: string; slug: string }) => {
+      void resolveHiveAccounts([m.pubkey])
+        .catch(() => new Map<string, string>())
+        .then((names) => {
+          const who = names.has(m.pubkey) ? `@${names.get(m.pubkey)}` : shortPubkey(m.pubkey)
+          showNotification({
+            title: `${who} · ${m.slug}`,
+            body: quoteSnippet(m.content, 120),
+            tag: `room:${m.slug}`,
+            onClick: () => openRoom(m.slug),
+          })
+        })
+    },
+    [openRoom],
+  )
+  const { rooms, counts, unread, directed, error, creating, createError, create, update } = useRooms(identity.publicKey, account, route.slug, onDirected)
   const online = useOnline()
   // Título de la pestaña con el total de no leídos.
   const unreadTotal = [...unread.values()].reduce((a, b) => a + b, 0)
