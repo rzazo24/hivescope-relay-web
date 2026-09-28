@@ -1,0 +1,19 @@
+/** Un evento kind 5 (NIP-09) tal como llega del relé, en lo que nos importa. */
+export interface DeletionEvent {
+  pubkey: string
+  tags: string[][]
+}
+
+/**
+ * Aplica una petición de borrado NIP-09 a la lista de mensajes: quita los que
+ * apunta con tags "e" SOLO si el autor del mensaje es quien pide el borrado.
+ * El relé ya lo exige (khatru compara pubkeys), pero un cliente no debe fiarse
+ * de que todos los relés lo hagan. Devuelve la misma lista si no cambia nada,
+ * para no provocar renders de más.
+ */
+export function applyDeletion<T extends { id: string; pubkey: string }>(messages: T[], deletion: DeletionEvent): T[] {
+  const targets = new Set(deletion.tags.filter((t) => t[0] === 'e' && t[1]).map((t) => t[1]))
+  if (targets.size === 0) return messages
+  const next = messages.filter((m) => !(targets.has(m.id) && m.pubkey === deletion.pubkey))
+  return next.length === messages.length ? messages : next
+}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
+import { ConfirmModal } from '../../components/ConfirmModal'
 import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
@@ -26,7 +27,8 @@ export function ChatRoom({
   onBack: () => void
 }) {
   const { t } = useTranslation()
-  const { messages, connected, sending, error, send } = useChatRoom(room.slug, identity)
+  const { messages, connected, sending, error, send, remove } = useChatRoom(room.slug, identity)
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -111,6 +113,15 @@ export function ChatRoom({
                   {isMe ? t('chat.you') : senderNames.has(msg.pubkey) ? `@${senderNames.get(msg.pubkey)}` : shortPubkey(msg.pubkey)}
                 </span>
                 <span>{formatTime(msg.createdAt)}</span>
+                {isMe && (
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(msg.id)}
+                    className="underline decoration-dotted underline-offset-2 transition hover:text-error"
+                  >
+                    {t('chat.delete')}
+                  </button>
+                )}
               </div>
               <p className={isMe ? 'text-accent' : 'text-ink'}>{msg.content}</p>
             </div>
@@ -142,6 +153,21 @@ export function ChatRoom({
       </form>
 
       {error && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {error}</p>}
+
+      {pendingDelete && (
+        <ConfirmModal
+          title={`$ ${t('chat.deleteTitle')}`}
+          message={t('chat.deleteConfirm')}
+          confirmLabel={t('chat.deleteConfirmButton')}
+          cancelLabel={t('chat.deleteCancel')}
+          onConfirm={() => {
+            const id = pendingDelete
+            setPendingDelete(null)
+            void remove(id)
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   )
 }

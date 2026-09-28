@@ -74,6 +74,10 @@ privilegio reforzado de una sala — cualquier cuenta vinculada puede seguir
 escribiendo en cualquier sala; no hay capacidad de borrar mensajes ni de
 expulsar/silenciar cuentas.
 
+## Borrar mensajes
+
+Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrado NIP-09 firmado con tu clave: el relé elimina el mensaje y desaparece en vivo para todos en la sala. Solo funciona desde el navegador/dispositivo que lo envió, y no puede recuperar copias que alguien ya haya visto o guardado.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

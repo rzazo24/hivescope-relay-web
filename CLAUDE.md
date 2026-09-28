@@ -189,6 +189,19 @@ mobile keyboards already have their own emoji picker. Custom list rather than
 a library on purpose (no new dependency, matches the terminal styling); emoji
 render with the OS emoji font, so they look different per platform.
 
+   **Deleting your own messages**: `remove(id)` in `useChatRoom` publishes a
+   NIP-09 `kind:5` (`e` tag = message id, `k` = 9) signed with this device's
+   key; hivescope-relay (khatru) only honors it when the pubkey matches the
+   message author (verified: a different key gets "you are not the author").
+   The hook also subscribes to `kind:5` with `since = now` so a deletion
+   removes the message live for everyone in the room; `applyDeletion`
+   (`deletion.ts`) re-checks author == requester client-side instead of
+   trusting the relay. Because the relay compares *pubkeys*, "delete" only
+   shows on messages sent from this same browser/device (`isMe` is by pubkey),
+   not ones you sent from another device of the same Hive account (unlike room
+   ownership, which is per account). It's a request, not a recall: the message
+   was public from the moment it was sent (the help panel says so).
+
 **Styling**: Tailwind v4, config-free — tokens are defined directly in
 `src/index.css` via `@theme` (colors, `--font-sans`/`--font-mono`). The
 "hacker terminal" look (monospace everywhere, `TerminalWindow` chrome with

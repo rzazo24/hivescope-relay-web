@@ -3,6 +3,7 @@ import { Relay } from 'nostr-tools/relay'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { RELAY_URL } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
+import { applyDeletion } from './deletion'
 
 export interface ChatMessage {
   id: string
@@ -63,6 +64,15 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
             )
           },
         })
+
+        // Borrados en vivo: cuando alguien retira un mensaje (kind 5, NIP-09),
+        // desaparece también para quien ya lo tiene en pantalla. Sin historial
+        // (since = ahora): lo ya borrado antes de entrar no llega en el kind 9.
+        relay.subscribe([{ kinds: [5], since: Math.floor(Date.now() / 1000) }], {
+          onevent(event) {
+            setMessages((prev) => applyDeletion(prev, event))
+          },
+        })
       })
       .catch((err) => setError(err instanceof Error ? err.message : String(err)))
 
@@ -101,5 +111,36 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     [slug, identity],
   )
 
-  return { messages, connected, sending, error, send }
+  /** Retira un mensaje propio (NIP-09). Devuelve true si el relé lo aceptó. */
+  const remove = useCallback(
+    async (id: string) => {
+      const relay = relayRef.current
+      if (!relay) return false
+
+      setError(null)
+      try {
+        const event = finalizeEvent(
+          {
+            kind: 5,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [
+              ['e', id],
+              ['k', '9'],
+            ],
+            content: '',
+          },
+          identity.secretKey,
+        )
+        await relay.publish(event)
+        setMessages((prev) => applyDeletion(prev, event))
+        return true
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+        return false
+      }
+    },
+    [identity],
+  )
+
+  return { messages, connected, sending, error, send, remove }
 }
