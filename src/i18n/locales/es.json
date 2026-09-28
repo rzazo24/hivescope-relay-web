@@ -44,7 +44,10 @@
     "currentlyExpiresIn": "caduca actualmente en:",
     "snapPosting": "$ publicando un snap de esta sala en Hive…",
     "snapDone": "[ok] snap publicado en Hive",
-    "snapError": "[!] sala creada, pero no se pudo publicar el snap en Hive —"
+    "snapError": "[!] no se pudo publicar el snap en Hive —",
+    "snapOffer": "[ok] «{{name}}» creada — ¿compartirla en Hive como snap?",
+    "snapShare": "> compartir en Hive",
+    "snapDismiss": "no, gracias"
   },
   "chat": {
     "connecting": "$ conectando…",
@@ -82,7 +85,7 @@
       },
       {
         "heading": "$ snaps_hive",
-        "body": "Al crear una sala, HiveScope también pide a Hive Keychain que publique un \"snap\" corto sobre ella en Hive — una respuesta al hilo diario de @peak.snaps — para anunciarla en la blockchain. Es una publicación real y permanente de Hive que no se puede borrar, aunque la sala expire en una hora. Si cancelas la ventana de Keychain o el snap falla, la sala se crea igualmente, solo que sin el anuncio."
+        "body": "Al crear una sala, HiveScope te ofrece compartirla en Hive como un \"snap\" corto — una respuesta al hilo diario de @peak.snaps. No se publica nada si no pulsas el botón; entonces Hive Keychain te pide firmar. Un snap es una publicación real y permanente de Hive que no se puede borrar, aunque la sala expire en una hora. La sala se crea igualmente."
       },
       {
         "heading": "$ tema",

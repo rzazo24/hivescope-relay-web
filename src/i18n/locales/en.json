@@ -44,7 +44,10 @@
     "currentlyExpiresIn": "currently expires in:",
     "snapPosting": "$ posting a snap about this room to Hive…",
     "snapDone": "[ok] snap posted to Hive",
-    "snapError": "[!] room created, but couldn't post the Hive snap —"
+    "snapError": "[!] couldn't post the Hive snap —",
+    "snapOffer": "[ok] \"{{name}}\" created — share it on Hive as a snap?",
+    "snapShare": "> share on Hive",
+    "snapDismiss": "no thanks"
   },
   "chat": {
     "connecting": "$ connecting…",
@@ -82,7 +85,7 @@
       },
       {
         "heading": "$ hive_snaps",
-        "body": "When you create a room, HiveScope also asks Hive Keychain to post a short \"snap\" about it on Hive — a reply to the daily @peak.snaps thread — so the room gets announced on the blockchain. It's a real, permanent Hive post that can't be deleted, even if the room itself expires in an hour. If you cancel the Keychain popup or the snap fails, the room is still created, you just won't get the announcement."
+        "body": "When you create a room, HiveScope offers to share it on Hive as a short \"snap\" — a reply to the daily @peak.snaps thread. Nothing is posted unless you press the button, then Hive Keychain asks you to sign. A snap is a real, permanent Hive post that can't be deleted, even if the room expires in an hour. The room is created either way."
       },
       {
         "heading": "$ theme",

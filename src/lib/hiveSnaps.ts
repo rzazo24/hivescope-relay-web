@@ -50,7 +50,7 @@ export async function findLatestSnapContainer(): Promise<SnapContainer | null> {
  * @peak.snaps) anunciando una sala nueva de HiveScope Chat. Falla (rechaza
  * la promesa) si no hay contenedor disponible o si Keychain cancela/rechaza
  * la publicación -- quien llama decide si eso debe bloquear algo más o no
- * (en RoomList.tsx, no bloquea: la sala ya existe en Nostr igual).
+ * (en RoomList.tsx solo se llama si el usuario pulsa el botón de compartir).
  */
 export async function publishRoomSnap(account: string, roomName: string, roomUrl: string): Promise<void> {
   const container = await findLatestSnapContainer()

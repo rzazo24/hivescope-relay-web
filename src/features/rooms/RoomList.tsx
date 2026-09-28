@@ -159,6 +159,9 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
+  // Nombre de la sala recién creada sobre la que se ofrece publicar un snap
+  // (null = nada que ofrecer). El snap solo se publica si el usuario pulsa el botón.
+  const [snapOffer, setSnapOffer] = useState<string | null>(null)
   const [snapStatus, setSnapStatus] = useState<'idle' | 'posting' | 'error' | 'done'>('idle')
   const [snapError, setSnapError] = useState<string | null>(null)
   const adminNames = useHiveAccountNames(rooms?.map((r) => r.admin) ?? [])
@@ -180,13 +183,21 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
     if (!ok) return
     setNewRoomName('')
 
-    // La sala ya existe en Nostr aunque esto falle -- el snap es un extra,
-    // no una condición para que la creación de la sala cuente como exitosa.
+    // Ya no se publica solo: se ofrece un botón (ver más abajo). Un snap es
+    // permanente en Hive y pide otra firma de Keychain, así que decide el usuario.
+    setSnapOffer(trimmedName)
+    setSnapStatus('idle')
+    setSnapError(null)
+  }
+
+  const handleShareSnap = async () => {
+    if (!snapOffer) return
     setSnapStatus('posting')
     setSnapError(null)
     try {
-      await publishRoomSnap(account, trimmedName, SITE_URL)
+      await publishRoomSnap(account, snapOffer, SITE_URL)
       setSnapStatus('done')
+      setSnapOffer(null)
     } catch (err) {
       setSnapStatus('error')
       setSnapError(err instanceof Error ? err.message : String(err))
@@ -249,6 +260,28 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         </div>
         <LifetimeSelector value={newRoomLifetimeSeconds} onChange={setNewRoomLifetimeSeconds} disabled={creating} />
         {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {createError}</p>}
+        {snapOffer && snapStatus !== 'posting' && (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+            <span>{t('rooms.snapOffer', { name: snapOffer })}</span>
+            <button
+              type="button"
+              onClick={handleShareSnap}
+              className="rounded-md border border-border px-2 py-1 text-ink transition hover:border-accent hover:text-accent"
+            >
+              {t('rooms.snapShare')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSnapOffer(null)
+                setSnapStatus('idle')
+              }}
+              className="px-1 py-1 transition hover:text-ink"
+            >
+              {t('rooms.snapDismiss')}
+            </button>
+          </div>
+        )}
         {snapStatus === 'posting' && <p className="text-xs text-muted">{t('rooms.snapPosting')}</p>}
         {snapStatus === 'done' && <p className="text-xs text-success">{t('rooms.snapDone')}</p>}
         {snapStatus === 'error' && (

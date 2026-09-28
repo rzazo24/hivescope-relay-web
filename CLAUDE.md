@@ -140,21 +140,18 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    "currently expires in: Xd" so it's clear that line is status, not the
    picker. This is a point-in-time read from whenever `listRooms()` last
    ran, not a live ticking countdown — no interval/timer involved.
-   **Hive snaps on room creation** (`src/lib/hiveSnaps.ts`): after the
-   Nostr room-create succeeds, `RoomList.handleCreate` calls
-   `publishRoomSnap`, which finds the newest post by `@peak.snaps`
-   (`bridge.get_account_posts` against `HIVE_API_NODE`, plain `fetch`, no
-   auth) and asks Keychain (`requestHiveBroadcast` -> `requestBroadcast`,
-   posting key) to broadcast a `comment` replying to it. This is the first
-   place the app writes to the actual Hive chain rather than just signing
-   a link challenge, and it means creating a room now pops a second
-   Keychain prompt. Deliberately **non-blocking**: the room already exists
-   on Nostr, so a failed/cancelled snap only shows a soft muted note
-   (`snapStatus`), never an error that undoes anything. Two caveats: the
-   `@peak.snaps` daily container is a PeakD community convention, not a
-   protocol, so it can silently stop working if they change it; and the
-   snap is permanent on-chain even for 1h rooms (chosen explicitly: "always,
-   for any new room"). Only creation posts a snap, not edits/renewals.
+   **Hive snaps, opt-in** (`src/lib/hiveSnaps.ts`): after a room is
+   created, `RoomList` only *offers* to share it (`snapOffer`); nothing is
+   posted unless the user presses "share on Hive". Then `publishRoomSnap`
+   finds the newest post by `@peak.snaps` (`bridge.get_account_posts`
+   against `HIVE_API_NODE`, plain `fetch`) and asks Keychain
+   (`requestHiveBroadcast` -> `requestBroadcast`, posting key) to broadcast a
+   `comment` replying to it. It started as automatic on every creation and
+   was made opt-in on request: a snap is permanent on-chain (even for 1h
+   rooms) and costs a second Keychain prompt. Failure/cancel only shows a
+   soft muted note. The `@peak.snaps` container is a PeakD convention, not a
+   protocol, so it can silently stop working. Only creation offers a snap,
+   not edits/renewals.
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with

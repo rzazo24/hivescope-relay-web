@@ -87,7 +87,7 @@ left.
 
 ## Hive snaps
 
-Creating a room also asks Hive Keychain to post a short "snap" (a reply to the daily `@peak.snaps` container post) announcing it on Hive. It's permanent on-chain and best-effort: if it fails or is cancelled, the room is still created. See `src/lib/hiveSnaps.ts`.
+After creating a room you're offered a button to share it on Hive as a short "snap" (a reply to the daily `@peak.snaps` container post, signed via Hive Keychain). Nothing is posted unless you press it; a snap is permanent on-chain. See `src/lib/hiveSnaps.ts`.
 
 ## The Hive↔Nostr link, in short
 
