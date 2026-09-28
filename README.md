@@ -80,6 +80,10 @@ Each of your messages has a "delete" link (with confirmation). It sends a NIP-09
 
 The people icon shows how many Hive accounts are online, in total (top bar), per room (room list) and in the current room; click it in the top bar or a room header to list who is online. Linked clients send ephemeral heartbeats saying which room they're in; nothing is stored, and two devices of the same account count once.
 
+## Message count
+
+Each room in the list shows how many messages it holds. One query to the relay tallies them all (refreshed every minute, so deletions are picked up) and new messages bump the number live.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

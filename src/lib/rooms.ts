@@ -220,3 +220,36 @@ export function mergeRoom(rooms: Room[], incoming: Room): Room[] {
 export function isRoomExpired(room: Pick<Room, 'expiresAt'>, now: number = Math.floor(Date.now() / 1000)): boolean {
   return room.expiresAt > 0 && room.expiresAt <= now
 }
+
+/** Cuenta mensajes por sala (tag `t`) a partir de eventos kind:9. Exportada para probarla. */
+export function tallyMessages(events: { tags: string[][] }[]): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const event of events) {
+    const slug = event.tags.find((t) => t[0] === 't')?.[1]
+    if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1)
+  }
+  return counts
+}
+
+/** Número de mensajes guardados en cada sala: una sola consulta al relé para todas. */
+export async function countMessagesByRoom(slugs: string[]): Promise<Map<string, number>> {
+  if (slugs.length === 0) return new Map()
+  const relay = await Relay.connect(RELAY_URL)
+  try {
+    return await new Promise((resolve) => {
+      const events: { tags: string[][] }[] = []
+      const sub = relay.subscribe([{ kinds: [9], '#t': slugs, limit: 5000 }], {
+        onevent: (event) => events.push(event),
+        oneose() {
+          sub.close()
+          resolve(tallyMessages(events))
+        },
+        onclose() {
+          resolve(tallyMessages(events))
+        },
+      })
+    })
+  } finally {
+    relay.close()
+  }
+}

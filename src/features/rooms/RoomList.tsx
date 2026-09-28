@@ -54,6 +54,7 @@ function RoomRow({
   canManage,
   adminLabel,
   online,
+  messages,
   onSelect,
   onSave,
 }: {
@@ -61,6 +62,7 @@ function RoomRow({
   canManage: boolean
   adminLabel: string
   online: number
+  messages: number
   onSelect: () => void
   onSave: (name: string, lifetimeSeconds: number) => Promise<boolean>
 }) {
@@ -141,6 +143,7 @@ function RoomRow({
         </span>
         <span className="text-xs text-muted">
           {adminLabel}
+          {` · ${t('rooms.messages', { count: messages })}`}
           {timeRemaining && ` · ${t('rooms.lifetimePrompt')} ${timeRemaining}`}
         </span>
       </button>
@@ -164,7 +167,7 @@ function RoomRow({
 
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
-  const { rooms, error, creating, createError, create, update } = useRooms()
+  const { rooms, counts, error, creating, createError, create, update } = useRooms()
   const route = useRoomRoute()
   const online = useOnline()
   const selectedRoom = route.slug ? (rooms?.find((r) => r.slug === route.slug) ?? null) : null
@@ -262,6 +265,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   canManage={canManage}
                   adminLabel={adminLabel}
                   online={online.byRoom.get(room.slug) ?? 0}
+                  messages={counts.get(room.slug) ?? 0}
                   onSelect={() => route.open(room.slug)}
                   onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />

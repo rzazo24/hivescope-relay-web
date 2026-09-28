@@ -82,6 +82,10 @@ Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrad
 
 El icono de personas muestra cuántas cuentas Hive están en línea: en total (barra superior), por sala (lista de salas) y en la sala actual; púlsalo en la barra superior o en la cabecera de una sala para ver la lista de quién está en línea. Los clientes vinculados envían latidos efímeros indicando en qué sala están; no se guarda nada, y dos dispositivos de la misma cuenta cuentan una vez.
 
+## Número de mensajes
+
+Cada sala del listado muestra cuántos mensajes tiene. Una sola consulta al relé los cuenta todos (se repite cada minuto, así que los borrados se reflejan) y los mensajes nuevos suben el número en vivo.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

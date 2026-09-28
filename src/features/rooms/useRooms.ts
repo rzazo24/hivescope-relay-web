@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Relay } from 'nostr-tools/relay'
 import { RELAY_URL } from '../../lib/config'
-import { createRoom, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, type Room } from '../../lib/rooms'
+import { countMessagesByRoom, createRoom, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, type Room } from '../../lib/rooms'
 
 // Cada cuánto se vuelve a pedir la lista completa. Las altas y ediciones llegan
 // en vivo por la suscripción, pero cuando el relé borra una sala caducada no
@@ -60,6 +60,40 @@ export function useRooms() {
     }
   }, [])
 
+  // Mensajes por sala: se recuentan al cambiar el conjunto de salas y cada
+  // REFRESH_MS (también recoge los borrados); entre medias suben en vivo.
+  const [counts, setCounts] = useState<Map<string, number>>(new Map())
+  const slugsKey = rooms === null ? null : rooms.map((r) => r.slug).sort().join('\n')
+  useEffect(() => {
+    if (slugsKey === null) return
+    const slugs = slugsKey ? slugsKey.split('\n') : []
+    let cancelled = false
+    const load = () =>
+      countMessagesByRoom(slugs)
+        .then((c) => !cancelled && setCounts(c))
+        .catch(() => {})
+    load()
+    const id = setInterval(load, REFRESH_MS)
+    let relay: Relay | null = null
+    Relay.connect(RELAY_URL, { enableReconnect: true })
+      .then((r) => {
+        if (cancelled) return r.close()
+        relay = r
+        r.subscribe([{ kinds: [9], limit: 0 }], {
+          onevent(event) {
+            const slug = event.tags.find((t) => t[0] === 't')?.[1]
+            if (slug) setCounts((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+          },
+        })
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+      clearInterval(id)
+      relay?.close()
+    }
+  }, [slugsKey])
+
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000))
   useEffect(() => {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), EXPIRY_TICK_MS)
@@ -110,5 +144,5 @@ export function useRooms() {
     [refresh],
   )
 
-  return { rooms: visibleRooms, error, refresh, creating, createError, create, updating, updateError, update }
+  return { rooms: visibleRooms, counts, error, refresh, creating, createError, create, updating, updateError, update }
 }

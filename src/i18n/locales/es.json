@@ -32,6 +32,8 @@
     "namePlaceholder": "nombre de la sala",
     "create": "> crear sala",
     "creating": "> creando…",
+    "messages_one": "{{count}} mensaje",
+    "messages_other": "{{count}} mensajes",
     "adminPrefix": "admin:",
     "back": "< cd ..",
     "enteredTitle": "$ cd {{slug}}",

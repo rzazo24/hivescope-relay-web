@@ -32,6 +32,8 @@
     "namePlaceholder": "room name",
     "create": "> create room",
     "creating": "> creating…",
+    "messages_one": "{{count}} message",
+    "messages_other": "{{count}} messages",
     "adminPrefix": "admin:",
     "back": "< cd ..",
     "enteredTitle": "$ cd {{slug}}",

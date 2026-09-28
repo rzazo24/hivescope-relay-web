@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canManageRoom, formatTimeRemaining, isRoomExpired, mergeRoom, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom } from './rooms'
+import { canManageRoom, formatTimeRemaining, isRoomExpired, mergeRoom, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom, tallyMessages } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -245,5 +245,14 @@ describe('isRoomExpired', () => {
   it('is false before the deadline and for rooms with no expiration data', () => {
     expect(isRoomExpired({ expiresAt: 100 }, 99)).toBe(false)
     expect(isRoomExpired({ expiresAt: 0 }, 1_000_000)).toBe(false)
+  })
+})
+
+describe('tallyMessages', () => {
+  it('cuenta por sala e ignora eventos sin tag t', () => {
+    const c = tallyMessages([{ tags: [['t', 'a']] }, { tags: [['t', 'a']] }, { tags: [['t', 'b']] }, { tags: [] }])
+    expect(c.get('a')).toBe(2)
+    expect(c.get('b')).toBe(1)
+    expect(c.size).toBe(2)
   })
 })
