@@ -157,6 +157,14 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    autocomplete candidate — except when the only candidate is already fully
    typed, otherwise Enter would never send.
 
+   **Typing indicator** rides on the presence heartbeat: `notifyTyping` (from
+   `useOnline()`, called on input change) publishes a beat with an extra
+   `['typing']` tag, throttled to `TYPING_THROTTLE_MS` (the relay's presence
+   limiter is per IP). Receivers keep a `TypingBook` and show it for
+   `TYPING_MS`; `ChatRoom` also hides a typer once a message from their account
+   newer than their last beat arrives. Needs the relay to accept the tag
+   (deployed with the relay commit "allow a typing tag").
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

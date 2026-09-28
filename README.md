@@ -92,6 +92,10 @@ Rooms with messages you haven't seen show a "N new" badge, and the tab title car
 
 Type `@account` to mention someone (autocomplete from people in the room; Tab/Enter, or click a sender's name to insert it) and use "reply" under a message to quote it. Mentions are plain text in the message; a reply adds NIP-10 tags (`e` with the `reply` marker plus `p` for the quoted author), so no relay change is needed. Messages that mention you or reply to yours are highlighted, and the room list shows an `@N` badge (`src/features/chat/mentions.ts`).
 
+## Typing indicator
+
+While you type, the client sends (at most every 4 s) a presence heartbeat with a `typing` tag; others in the room see "@name is typing…" for 5 s (dropped as soon as their message arrives). Needs the relay to accept that tag. See `typingByRoom` in `src/lib/presence.ts`.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

@@ -75,6 +75,17 @@ export function ChatRoom({
     ...senderNames.values(),
     ...peopleInRoom(online.people, room.slug).flatMap((p) => (p.account ? [p.account] : [])),
   ]
+  // Quién escribe ahora: fuera yo, y fuera quien ya ha enviado su mensaje después
+  // de empezar a escribir (su último aviso puede durar unos segundos más).
+  const typers = (online.typing.get(room.slug) ?? [])
+    .filter((x) => x.account !== account.toLowerCase())
+    .filter(
+      (x) =>
+        !messages.some(
+          (m) => senderNames.get(m.pubkey)?.toLowerCase() === x.account && m.createdAt * 1000 >= x.at - 1500,
+        ),
+    )
+    .map((x) => x.account)
   const mention = mentionQuery(draft, caret)
   // Si ya está escrita entera la única cuenta posible, no hay nada que completar:
   // Enter tiene que enviar el mensaje, no "elegir" lo que ya está puesto.
@@ -283,6 +294,12 @@ export function ChatRoom({
         })}
       </div>
 
+      <p className="-mt-1 h-4 truncate text-[11px] text-muted" aria-live="polite">
+        {typers.length === 1 && t('chat.typingOne', { a: `@${typers[0]}` })}
+        {typers.length === 2 && t('chat.typingTwo', { a: `@${typers[0]}`, b: `@${typers[1]}` })}
+        {typers.length > 2 && t('chat.typingMany', { count: typers.length })}
+      </p>
+
       {replyingTo && (
         <div className="flex items-center justify-between gap-2 border-l-2 border-accent bg-code px-2 py-1 text-xs text-muted">
           <span className="min-w-0 truncate">
@@ -316,6 +333,7 @@ export function ChatRoom({
           type="text"
           value={draft}
           onChange={(e) => {
+            if (e.target.value.trim()) online.notifyTyping()
             setDraft(e.target.value)
             setCaret(e.target.selectionStart ?? e.target.value.length)
             setPickIndex(0)

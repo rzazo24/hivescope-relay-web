@@ -85,3 +85,39 @@ export function countOnline(
   list.forEach((p) => p.rooms.sort())
   return { total: list.length, byRoom: new Map([...rooms].map(([slug, set]) => [slug, set.size])), people: list }
 }
+
+/** Cuánto dura "está escribiendo" sin un nuevo aviso. */
+export const TYPING_MS = 5_000
+/** Cada cuánto como máximo se avisa de que estás escribiendo (cuida el límite de latidos del relé). */
+export const TYPING_THROTTLE_MS = 4_000
+
+/** Último aviso "está escribiendo" de un pubkey: en qué sala y cuándo lo recibimos (ms). */
+export type TypingBook = Map<string, { slug: string; at: number }>
+
+export function recordTyping(book: TypingBook, pubkey: string, slug: string, at: number): void {
+  book.set(pubkey, { slug, at })
+}
+
+/** Quien escribe en cada sala ahora mismo: cuenta (minúsculas) y desde cuándo. Descarta los caducados y los sin cuenta resuelta. */
+export function typingByRoom(
+  book: TypingBook,
+  now: number,
+  accountOf: (pubkey: string) => string | undefined,
+): Map<string, { account: string; at: number }[]> {
+  const out = new Map<string, { account: string; at: number }[]>()
+  for (const [pubkey, { slug, at }] of book) {
+    if (now - at > TYPING_MS) {
+      book.delete(pubkey)
+      continue
+    }
+    const account = accountOf(pubkey)?.toLowerCase()
+    if (!account) continue
+    const list = out.get(slug) ?? []
+    const existing = list.find((x) => x.account === account)
+    if (existing) existing.at = Math.max(existing.at, at)
+    else list.push({ account, at })
+    out.set(slug, list)
+  }
+  for (const list of out.values()) list.sort((a, b) => a.account.localeCompare(b.account))
+  return out
+}

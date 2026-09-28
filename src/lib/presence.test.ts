@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countOnline, peopleInRoom, pruneStale, type PresenceBook, recordBeat, STALE_MS } from './presence'
+import { countOnline, peopleInRoom, pruneStale, type PresenceBook, recordBeat, recordTyping, STALE_MS, TYPING_MS, type TypingBook, typingByRoom } from './presence'
 
 const none = () => undefined
 
@@ -107,5 +107,22 @@ describe('countOnline people list', () => {
     const { people } = countOnline(book, now, (pk) => ({ a: 'ana', b: 'bea', c: 'carla' })[pk])
     expect(peopleInRoom(people, 'general').map((p) => p.account)).toEqual(['ana'])
     expect(peopleInRoom(people, 'nada')).toEqual([])
+  })
+})
+
+describe('typing', () => {
+  const acc = (pk: string) => ({ a1: 'Ana', a2: 'ana', b: 'bea' })[pk]
+  it('agrupa por sala, une dispositivos de una cuenta y descarta caducados', () => {
+    const book: TypingBook = new Map()
+    recordTyping(book, 'a1', 'lobby', 1000)
+    recordTyping(book, 'a2', 'lobby', 2000)
+    recordTyping(book, 'b', 'otra', 1000)
+    recordTyping(book, 'z', 'lobby', 1000) // sin cuenta resuelta
+    const m = typingByRoom(book, 3000, acc)
+    expect(m.get('lobby')).toEqual([{ account: 'ana', at: 2000 }])
+    expect(m.get('otra')).toEqual([{ account: 'bea', at: 1000 }])
+    const later = typingByRoom(book, 1000 + TYPING_MS + 1, acc)
+    expect(later.get('otra')).toBeUndefined()
+    expect(book.has('b')).toBe(false)
   })
 })

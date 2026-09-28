@@ -94,6 +94,10 @@ Las salas con mensajes que no has visto muestran una etiqueta «N nuevos», y el
 
 Escribe `@cuenta` para mencionar a alguien (autocompletado con la gente de la sala; Tab/Intro, o pulsa el nombre de quien escribe para insertarlo) y usa «responder» bajo un mensaje para citarlo. Las menciones son texto del propio mensaje; una respuesta añade tags NIP-10 (`e` con el marcador `reply` y `p` con el autor citado), así que no hace falta tocar el relé. Los mensajes que te mencionan o responden a uno tuyo se resaltan y la lista de salas muestra una etiqueta `@N` (`src/features/chat/mentions.ts`).
 
+## Aviso «está escribiendo»
+
+Mientras escribes, el cliente envía (como mucho cada 4 s) un latido de presencia con un tag `typing`; los demás de la sala ven «@nombre está escribiendo…» durante 5 s (desaparece en cuanto llega su mensaje). Requiere que el relé acepte ese tag. Ver `typingByRoom` en `src/lib/presence.ts`.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

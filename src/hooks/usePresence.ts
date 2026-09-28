@@ -1,6 +1,6 @@
 import { finalizeEvent } from 'nostr-tools/pure'
 import { Relay } from 'nostr-tools/relay'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { RELAY_URL } from '../lib/config'
 import type { NostrIdentity } from '../lib/nostrIdentity'
 import {
@@ -11,6 +11,10 @@ import {
   pruneStale,
   type PresenceBook,
   recordBeat,
+  recordTyping,
+  TYPING_THROTTLE_MS,
+  type TypingBook,
+  typingByRoom,
 } from '../lib/presence'
 import { resolveHiveAccounts } from '../lib/relay'
 
@@ -21,12 +25,22 @@ const RESPOND_GUARD_MS = 1000
 // Cuánto esperar antes de volver a pedir la cuenta de un pubkey que no se resolvió.
 const RETRY_MS = 15_000
 
-const EMPTY: OnlineCounts = { total: 0, byRoom: new Map(), people: [] }
-const OnlineContext = createContext<OnlineCounts>(EMPTY)
+type Typers = Map<string, { account: string; at: number }[]>
+
+/** Presencia + quién está escribiendo en cada sala + cómo avisar de que tú escribes. */
+export type Online = OnlineCounts & {
+  typing: Typers
+  /** Avisa (con freno) de que estás escribiendo en la sala actual. */
+  notifyTyping: () => void
+}
+
+const NO_TYPERS: Typers = new Map()
+const EMPTY: Online = { total: 0, byRoom: new Map(), people: [], typing: NO_TYPERS, notifyTyping: () => {} }
+const OnlineContext = createContext<Online>(EMPTY)
 export const OnlineProvider = OnlineContext.Provider
 
 /** Quién está en línea (total y por sala), tal como lo calcula usePresence en App. */
-export function useOnline(): OnlineCounts {
+export function useOnline(): Online {
   return useContext(OnlineContext)
 }
 
@@ -43,8 +57,11 @@ export function useOnline(): OnlineCounts {
  * un retraso aleatorio corto: en un par de segundos se conocen todos, sin
  * esperar 25 s ni hacer que el relé guarde nada.
  */
-export function usePresence(identity: NostrIdentity, slug: string | null, enabled: boolean): OnlineCounts {
+export function usePresence(identity: NostrIdentity, slug: string | null, enabled: boolean): Online {
   const [counts, setCounts] = useState<OnlineCounts>(EMPTY)
+  const [typing, setTyping] = useState<Typers>(NO_TYPERS)
+  const notifyRef = useRef<() => void>(() => {})
+  const notifyTyping = useCallback(() => notifyRef.current(), [])
   const slugRef = useRef(slug)
   const beatRef = useRef<(left?: boolean) => void>(() => {})
   const connectedRef = useRef(false)
@@ -62,6 +79,9 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
     const book: PresenceBook = new Map()
     const accounts = new Map<string, string>()
     const askedAt = new Map<string, number>()
+    const typingBook: TypingBook = new Map()
+    let lastTypingSent = 0
+    let typingKey = ''
     let lastBeatAt = 0
     let respondTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -87,13 +107,22 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
       }
     }
 
-    const beat = (left = false) => {
+    const refreshTyping = () => {
+      const next = typingByRoom(typingBook, Date.now(), (pk) => accounts.get(pk) || undefined)
+      const key = JSON.stringify([...next])
+      if (key === typingKey) return
+      typingKey = key
+      setTyping(next.size === 0 ? NO_TYPERS : next)
+    }
+
+    const beat = (left = false, isTyping = false) => {
       if (!relay) return
       const now = Date.now()
       lastBeatAt = now
       const tags: string[][] = []
       if (slugRef.current) tags.push(['t', slugRef.current])
       if (left) tags.push(['left'])
+      if (isTyping && slugRef.current) tags.push(['typing'])
       recordBeat(book, identity.publicKey, slugRef.current, now, left)
       recompute()
       // un latido perdido no importa (rate limit, corte...): llegará el siguiente
@@ -102,6 +131,11 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
         .catch(() => {})
     }
     beatRef.current = beat
+    notifyRef.current = () => {
+      if (!slugRef.current || Date.now() - lastTypingSent < TYPING_THROTTLE_MS) return
+      lastTypingSent = Date.now()
+      beat(false, true)
+    }
 
     Relay.connect(RELAY_URL, { enableReconnect: true })
       .then((r) => {
@@ -115,6 +149,10 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
           onevent(event) {
             const room = event.tags.find((t) => t[0] === 't')?.[1] ?? null
             const left = event.tags.some((t) => t[0] === 'left')
+            if (event.tags.some((t) => t[0] === 'typing') && room && event.pubkey !== identity.publicKey) {
+              recordTyping(typingBook, event.pubkey, room, Date.now())
+              refreshTyping()
+            }
             const arrival = recordBeat(book, event.pubkey, room, Date.now(), left)
             recompute()
             if (arrival && event.pubkey !== identity.publicKey && Date.now() - lastBeatAt > RESPOND_GUARD_MS) {
@@ -131,6 +169,7 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
 
     const heartbeat = setInterval(() => beat(), HEARTBEAT_MS)
     const tick = setInterval(recompute, 5000)
+    const typingTick = setInterval(refreshTyping, 1000)
     const onHide = () => beat(true)
     window.addEventListener('pagehide', onHide)
 
@@ -140,11 +179,13 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
       beatRef.current = () => {}
       clearInterval(heartbeat)
       clearInterval(tick)
+      clearInterval(typingTick)
+      notifyRef.current = () => {}
       clearTimeout(respondTimer)
       window.removeEventListener('pagehide', onHide)
       relay?.close()
     }
   }, [enabled, identity])
 
-  return enabled ? counts : EMPTY
+  return useMemo(() => (enabled ? { ...counts, typing, notifyTyping } : EMPTY), [enabled, counts, typing, notifyTyping])
 }
