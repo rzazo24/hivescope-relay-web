@@ -114,6 +114,24 @@ body {
   }
 }
 
+/* Fondo también en <html> y sin rebote de scroll: en iOS, al salir el
+   teclado, la vista se desplaza y no debe asomar el fondo del navegador. */
+html {
+  background: var(--color-base);
+  overscroll-behavior-y: none;
+}
+
+/* En táctil, la altura mínima de la página suma lo que tapa el teclado
+   (--keyboard-inset, ver src/lib/keyboardInset.ts): así el documento siempre
+   llega más abajo que el área visible y no asoma fondo blanco. Es min-height
+   y no padding porque en páginas cortas el padding quedaría dentro del
+   min-h-svh sin alargar nada. Sin @layer para ganar a min-h-svh. */
+@media (pointer: coarse) {
+  main {
+    min-height: calc(100svh + var(--keyboard-inset, 0px));
+  }
+}
+
 @keyframes blink {
   0%,
   49% {
