@@ -78,7 +78,7 @@
       },
       {
         "heading": "$ caducidad",
-        "body": "Quien crea o edita una sala elige cuánto dura (1 hora, 24 horas, 7, 30 o 90 días) — al pasar ese tiempo sin actualizaciones, la sala y sus mensajes se eliminan (las opciones de 1h/24h son orientativas, la limpieza se revisa más o menos cada hora, así que una sala de vida corta puede quedar hasta una hora más de lo esperado). Renombrarla, o cualquier otra edición, reinicia el plazo desde ese momento con la duración que elijas entonces — no hay una acción de \"renovar\" aparte, con editarla alcanza. Cada sala del listado muestra cuánto le queda, junto a su admin."
+        "body": "Quien crea o edita una sala elige cuánto dura (1 hora, 24 horas, 7, 30 o 90 días) — al pasar ese tiempo sin actualizaciones, la sala y sus mensajes se eliminan (la limpieza se ejecuta cada pocos minutos, así que una sala puede tardar unos minutos más de lo marcado en desaparecer). Renombrarla, o cualquier otra edición, reinicia el plazo desde ese momento con la duración que elijas entonces — no hay una acción de \"renovar\" aparte, con editarla alcanza. Cada sala del listado muestra cuánto le queda, junto a su admin."
       },
       {
         "heading": "$ snaps_hive",

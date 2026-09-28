@@ -110,11 +110,12 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    `expiration` tag (NIP-40) of `now + lifetimeSeconds`. The relay requires
    this tag and khatru auto-deletes the event once it passes; a separate
    relay-side sweep then deletes that room's chat messages too (see
-   hivescope-relay's `internal/roomsweep`). Both cleanup mechanisms run
-   roughly hourly (khatru's own NIP-40 sweep interval isn't configurable),
-   so the 1h/24h options are best-effort — a 1h room can realistically
-   take up to ~2h to actually vanish (up to an hour past its own mark, then
-   however long until the *next* sweep tick after that). Both `RoomList`'s
+   hivescope-relay's `internal/roomsweep`). The relay enforces expiration itself (`internal/roomsweep`, at startup and
+   every 5 minutes) — not khatru's own NIP-40 sweep, which proved
+   unreliable — so any duration, including 1h, can linger at most a few
+   minutes past its mark. The same sweep deletes stale room rows left by
+   *other pubkeys* (each browser has its own, so editing from another
+   device used to leave an old row alive forever). Both `RoomList`'s
    create form and `RoomRow`'s edit form show a `LifetimeSelector`
    (1h/24h/7d/30d/90d toggle, same visual pattern as `ThemeSwitcher`) so
    whoever creates or edits a room picks the duration each time — the edit

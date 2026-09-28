@@ -78,8 +78,8 @@ Rooms aren't permanent: creating or editing one lets you pick how long it
 lasts (1h, 24h, 7, 30, or 90 days — `ROOM_LIFETIME_OPTIONS` in
 `src/lib/rooms.ts`), stamped as a NIP-40 `expiration` on that publish. The
 relay auto-deletes the room — then its messages — once that time passes
-with no updates (the short options are best-effort: cleanup runs roughly
-hourly, so a 1h room may outlive its mark by up to an hour). Renaming a
+with no updates (cleanup runs every few minutes, so a room may linger a few
+minutes past its mark). Renaming a
 room, or any other edit, resets the clock with
 whatever duration you pick at that moment; there's no separate "renew"
 button, editing is enough. Each room in the list shows how long it has

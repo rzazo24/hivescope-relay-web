@@ -11,14 +11,11 @@ export const ROOM_META_KIND = 30078
  * (crear, renombrar, delegar admin, o simplemente volver a guardarla sin
  * cambios), lo que también la "renueva" desde ese momento -- ver
  * NewRoomMetaPolicy/internal/roomsweep en hivescope-relay para el porqué
- * (khatru borra la sala sola al expirar; un barrido propio del relé borra
- * además sus mensajes una vez que la sala ya no existe).
+ * (un barrido propio del relé borra la sala al expirar y, después, sus
+ * mensajes).
  *
- * Las duraciones cortas (1h/24h) son "mejor esfuerzo", no exactas: tanto el
- * barrido NIP-40 interno de khatru como internal/roomsweep corren cada
- * hora, así que una sala de 1h puede tardar hasta casi una hora extra en
- * desaparecer de verdad -- ver el comentario correspondiente en
- * internal/roomsweep del lado del relé.
+ * El relé aplica la caducidad él mismo (internal/roomsweep, al arrancar y
+ * cada 5 minutos), así que hasta 1h se cumple con unos minutos de margen.
  */
 export const ROOM_LIFETIME_OPTIONS = [
   { label: '1h', seconds: 60 * 60 },
