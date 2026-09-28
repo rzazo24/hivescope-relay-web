@@ -164,16 +164,23 @@ describe('isNewerRoom', () => {
 describe('formatTimeRemaining', () => {
   const now = 1700000000
 
-  it('rounds down to whole days when a day or more remains', () => {
+  it('shows whole days from 48 h on', () => {
     expect(formatTimeRemaining(now + 3 * 86400 + 1000, now)).toBe('3d')
   })
 
-  it('rounds down to whole hours when less than a day but an hour or more remains', () => {
+  it('shows hours below 48 h', () => {
     expect(formatTimeRemaining(now + 5 * 3600 + 100, now)).toBe('5h')
   })
 
-  it('rounds down to whole minutes when less than an hour remains', () => {
-    expect(formatTimeRemaining(now + 12 * 60 + 30, now)).toBe('12m')
+  it('shows minutes below an hour', () => {
+    expect(formatTimeRemaining(now + 12 * 60 + 20, now)).toBe('12m')
+  })
+
+  it('does not lose a unit to a few seconds of latency (24h created a moment ago is 24h, not 23h)', () => {
+    expect(formatTimeRemaining(now + 24 * 3600 - 5, now)).toBe('24h')
+    expect(formatTimeRemaining(now + 3600 - 5, now)).toBe('1h')
+    expect(formatTimeRemaining(now + 7 * 86400 - 40, now)).toBe('7d')
+    expect(formatTimeRemaining(now + 30 * 86400 - 90, now)).toBe('30d')
   })
 
   it('floors at 1m instead of showing 0m for anything still in the future', () => {

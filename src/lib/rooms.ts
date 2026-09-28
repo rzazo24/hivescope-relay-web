@@ -75,11 +75,16 @@ export function parseRoomEvent(event: {
   }
 }
 
+const GRACE_MINUTES = 5
+
 /**
- * Formatea cuánto le queda a una sala antes de expirar, redondeado a la
- * unidad más grande que tenga sentido ("3d", "5h", "12m") -- no es un
- * contador en vivo, solo una foto de lo que falta al momento de pedir la
- * lista de salas. Exportada para poder probarla directamente.
+ * Formatea cuánto le queda a una sala antes de expirar ("3d", "24h", "12m") --
+ * no es un contador en vivo, solo una foto de lo que falta al momento de pedir
+ * la lista de salas. Se redondea al minuto más cercano ANTES de elegir unidad:
+ * redondear hacia abajo hacía que una sala recién creada con 24 h mostrara "23h"
+ * (le faltaban 23 h 59 min 58 s), y lo mismo con 1 h ("59m") o 7 d ("6d").
+ * Hasta 48 h se cuentan horas (así "24h" sigue siendo "24h", no "1d"); a partir
+ * de ahí, días. Exportada para poder probarla directamente.
  */
 export function formatTimeRemaining(expiresAt: number, now: number = Math.floor(Date.now() / 1000)): string | null {
   if (expiresAt <= 0) return null // sin dato de expiración (sala vieja, o evento malformado)
@@ -87,12 +92,14 @@ export function formatTimeRemaining(expiresAt: number, now: number = Math.floor(
   const secondsLeft = expiresAt - now
   if (secondsLeft <= 0) return null // ya debería haber sido borrada; no mostrar un dato engañoso
 
-  const days = Math.floor(secondsLeft / 86400)
-  if (days >= 1) return `${days}d`
-  const hours = Math.floor(secondsLeft / 3600)
-  if (hours >= 1) return `${hours}h`
-  const minutes = Math.max(1, Math.floor(secondsLeft / 60))
-  return `${minutes}m`
+  const minutes = Math.max(1, Math.round(secondsLeft / 60))
+  if (minutes < 60) return `${minutes}m`
+  // Margen de unos minutos: la foto puede tener hasta ~1 min de retraso (la lista se
+  // relee cada 60 s), y con horas/días no debe bastar eso para perder una unidad.
+  const padded = minutes + GRACE_MINUTES
+  const hours = Math.floor(padded / 60)
+  if (hours < 48) return `${hours}h`
+  return `${Math.floor(padded / 1440)}d`
 }
 
 /**
