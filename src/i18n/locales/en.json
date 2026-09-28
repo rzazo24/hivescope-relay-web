@@ -47,7 +47,10 @@
     "snapError": "[!] couldn't post the Hive snap —",
     "snapOffer": "[ok] \"{{name}}\" created — share it on Hive as a snap?",
     "snapShare": "> share on Hive",
-    "snapDismiss": "no thanks"
+    "snapDismiss": "no thanks",
+    "notFound": "[!] room \"{{slug}}\" not found — it may have expired",
+    "copyLink": "copy link",
+    "linkCopied": "[ok] link copied"
   },
   "chat": {
     "connecting": "$ connecting…",
@@ -78,7 +81,7 @@
       },
       {
         "heading": "$ rooms",
-        "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner, the account currently listed as its admin (from any of your devices linked to that same Hive account), or the relay's operator account can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in."
+        "body": "Any linked account can create a room; whoever creates a given name first becomes its owner. From then on, only that room's owner, the account currently listed as its admin (from any of your devices linked to that same Hive account), or the relay's operator account can rename it or hand off admin to someone else — but any linked account can still post in any room, room names aren't reserved for particular people to write in. Every room has a direct link (chat.hivescope.xyz/r/room-name) you can copy with the \"copy link\" button inside the room; opening it takes you straight there once you're linked. The link stops working when the room expires."
       },
       {
         "heading": "$ expiration",

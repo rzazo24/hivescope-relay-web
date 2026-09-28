@@ -47,7 +47,10 @@
     "snapError": "[!] no se pudo publicar el snap en Hive —",
     "snapOffer": "[ok] «{{name}}» creada — ¿compartirla en Hive como snap?",
     "snapShare": "> compartir en Hive",
-    "snapDismiss": "no, gracias"
+    "snapDismiss": "no, gracias",
+    "notFound": "[!] sala «{{slug}}» no encontrada — puede que haya caducado",
+    "copyLink": "copiar enlace",
+    "linkCopied": "[ok] enlace copiado"
   },
   "chat": {
     "connecting": "$ conectando…",
@@ -78,7 +81,7 @@
       },
       {
         "heading": "$ salas",
-        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin (desde cualquiera de tus dispositivos vinculados a esa misma cuenta Hive), o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas."
+        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin (desde cualquiera de tus dispositivos vinculados a esa misma cuenta Hive), o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas. Cada sala tiene un enlace directo (chat.hivescope.xyz/r/nombre-de-sala) que puedes copiar con el botón \"copiar enlace\" dentro de la sala; al abrirlo, y con la cuenta vinculada, entras directamente. El enlace deja de funcionar cuando la sala caduca."
       },
       {
         "heading": "$ caducidad",

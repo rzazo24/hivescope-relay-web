@@ -1,10 +1,12 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
+import { useRoomRoute } from '../../hooks/useRoomRoute'
 import { SITE_URL, SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
+import { roomUrl } from '../../lib/roomRoute'
 import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
 import { useRooms } from './useRooms'
 
@@ -156,12 +158,13 @@ function RoomRow({
 export function RoomList({ identity, account }: { identity: NostrIdentity; account: string }) {
   const { t } = useTranslation()
   const { rooms, error, creating, createError, create, update } = useRooms()
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+  const route = useRoomRoute()
+  const selectedRoom = route.slug ? (rooms?.find((r) => r.slug === route.slug) ?? null) : null
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
   // Nombre de la sala recién creada sobre la que se ofrece publicar un snap
   // (null = nada que ofrecer). El snap solo se publica si el usuario pulsa el botón.
-  const [snapOffer, setSnapOffer] = useState<string | null>(null)
+  const [snapOffer, setSnapOffer] = useState<{ name: string; slug: string } | null>(null)
   const [snapStatus, setSnapStatus] = useState<'idle' | 'posting' | 'error' | 'done'>('idle')
   const [snapError, setSnapError] = useState<string | null>(null)
   // Cuentas Hive de los admins (para mostrarlas) y de los dueños (para saber si
@@ -172,8 +175,22 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   // evita esconderle el botón "editar" al superadmin en salas ajenas.
   const isSuperadmin = SUPERADMIN_HIVE_ACCOUNT !== '' && account.toLowerCase() === SUPERADMIN_HIVE_ACCOUNT.toLowerCase()
 
+  // Enlace directo (/r/<slug>): mientras carga la lista no se puede saber si la
+  // sala existe; una vez cargada, si no está (caducó o el enlace está mal) se
+  // limpia la URL y se avisa en la lista.
+  const roomMissing = route.slug !== null && rooms !== null && selectedRoom === null
+  const [missingSlug, setMissingSlug] = useState<string | null>(null)
+  if (roomMissing && missingSlug !== route.slug) setMissingSlug(route.slug)
+  const { replace } = route
+  useEffect(() => {
+    if (roomMissing) replace(null)
+  }, [roomMissing, replace])
+
   if (selectedRoom) {
-    return <ChatRoom room={selectedRoom} identity={identity} onBack={() => setSelectedRoom(null)} />
+    return <ChatRoom room={selectedRoom} identity={identity} onBack={() => route.open(null)} />
+  }
+  if (route.slug !== null && rooms === null && !error) {
+    return <p className="text-sm text-muted">{t('rooms.loading')}</p>
   }
 
   const handleCreate = async (e: FormEvent) => {
@@ -187,7 +204,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
 
     // Ya no se publica solo: se ofrece un botón (ver más abajo). Un snap es
     // permanente en Hive y pide otra firma de Keychain, así que decide el usuario.
-    setSnapOffer(trimmedName)
+    setSnapOffer({ name: trimmedName, slug })
     setSnapStatus('idle')
     setSnapError(null)
   }
@@ -197,7 +214,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
     setSnapStatus('posting')
     setSnapError(null)
     try {
-      await publishRoomSnap(account, snapOffer, SITE_URL)
+      await publishRoomSnap(account, snapOffer.name, roomUrl(SITE_URL, snapOffer.slug))
       setSnapStatus('done')
       setSnapOffer(null)
     } catch (err) {
@@ -209,6 +226,14 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   return (
     <div className="flex flex-col gap-4 text-sm">
       <p className="text-xs text-muted">{t('rooms.linkedAs', { account })}</p>
+      {missingSlug && (
+        <p className="flex items-center justify-between gap-2 rounded-md bg-error-bg px-3 py-2 text-xs text-error">
+          <span>{t('rooms.notFound', { slug: missingSlug })}</span>
+          <button type="button" onClick={() => setMissingSlug(null)} className="shrink-0 hover:text-ink">
+            x
+          </button>
+        </p>
+      )}
 
       <div>
         {rooms === null && !error && <p className="text-muted">{t('rooms.loading')}</p>}
@@ -228,7 +253,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   room={room}
                   canManage={canManage}
                   adminLabel={adminLabel}
-                  onSelect={() => setSelectedRoom(room)}
+                  onSelect={() => route.open(room.slug)}
                   onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />
               )
@@ -264,7 +289,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {createError}</p>}
         {snapOffer && snapStatus !== 'posting' && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-            <span>{t('rooms.snapOffer', { name: snapOffer })}</span>
+            <span>{t('rooms.snapOffer', { name: snapOffer.name })}</span>
             <button
               type="button"
               onClick={handleShareSnap}

@@ -5,6 +5,7 @@ import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
 import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
+import { roomUrl } from '../../lib/roomRoute'
 import { useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
@@ -29,6 +30,7 @@ export function ChatRoom({
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [copied, setCopied] = useState(false)
   const senderNames = useHiveAccountNames(messages.map((m) => m.pubkey))
 
   useEffect(() => {
@@ -52,6 +54,16 @@ export function ChatRoom({
     })
   }
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(roomUrl(window.location.origin, room.slug))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // sin permiso de portapapeles (contexto no seguro, etc.): no hay nada útil que mostrar
+    }
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const content = draft.trim()
@@ -66,9 +78,14 @@ export function ChatRoom({
         <button type="button" onClick={onBack} className="shrink-0 text-xs text-muted hover:text-ink">
           {t('rooms.back')}
         </button>
-        <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted">
-          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
-          <span className="truncate">{room.name}</span>
+        <div className="flex min-w-0 items-center gap-3 text-xs text-muted">
+          <button type="button" onClick={handleCopyLink} className="shrink-0 underline decoration-dotted underline-offset-2 hover:text-ink">
+            {copied ? t('rooms.linkCopied') : t('rooms.copyLink')}
+          </button>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${connected ? 'bg-success' : 'bg-error'}`} />
+            <span className="truncate">{room.name}</span>
+          </span>
         </div>
       </div>
 

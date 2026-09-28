@@ -72,6 +72,10 @@ relay's `NewRoomMetaPolicy`. This is the room's only enforced privilege —
 anyone linked can still post in any room; there's no message-deletion or
 kick/ban capability.
 
+## Room links
+
+Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.
+
 ## Room expiration
 
 Rooms aren't permanent: creating or editing one lets you pick how long it

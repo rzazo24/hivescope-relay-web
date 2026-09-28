@@ -159,6 +159,18 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    soft muted note. The `@peak.snaps` container is a PeakD convention, not a
    protocol, so it can silently stop working. Only creation offers a snap,
    not edits/renewals.
+   **Room links** (`/r/<slug>`): the open room lives in the URL, not in
+   component state. `useRoomRoute` (History API, no router lib) exposes
+   `slug/open/replace`; `RoomList` derives `selectedRoom` from
+   `rooms.find(slug)`, so a direct link works once the list loads (shows
+   "loading" until then). Entering/leaving pushes history (browser back
+   returns to the list); a slug that isn't in the list (expired/typo) gets
+   `replace(null)` plus a dismissible "not found" note. Unlinked visitors see
+   the link screen on that same URL and land in the room after linking. Works
+   in production because Caddy serves `index.html` for unknown paths
+   (`try_files {path} /index.html`) and assets are absolute (`/assets/...`).
+   Slugs are only `[a-z0-9-]` (`slugFromPath` rejects anything else). The Hive
+   snap now links to the room, and the room header has "copy link".
 3. `src/features/chat/` — `useChatRoom` is the one hook that keeps a
    relay connection open for as long as the room is mounted (every other
    `lib/` helper is connect-do-one-thing-close). It connects with
