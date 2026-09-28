@@ -65,6 +65,7 @@
     "send": "> send",
     "sending": "> sending…",
     "emoji": "emoji",
+    "mentionHint": "click to mention",
     "reply": "reply",
     "replyingTo": "replying to {{name}}",
     "replyCancel": "cancel reply",
@@ -98,7 +99,7 @@
       },
       {
         "heading": "$ mentions_replies",
-        "body": "Type @ and an account name to mention someone (suggestions come from people who wrote or are in the room; Tab or Enter picks one). Mentions are highlighted, and a message that mentions you or replies to yours is marked and shows an @ badge in the room list. The \"reply\" link under each message quotes it above yours. It's all part of the public message, so mentions and who you reply to are visible to anyone, like the rest."
+        "body": "Type @ and an account name to mention someone (click a sender's name to insert it, or suggestions come from people who wrote or are in the room; Tab or Enter picks one). Mentions are highlighted, and a message that mentions you or replies to yours is marked and shows an @ badge in the room list. The \"reply\" link under each message quotes it above yours. It's all part of the public message, so mentions and who you reply to are visible to anyone, like the rest."
       },
       {
         "heading": "$ expiration",

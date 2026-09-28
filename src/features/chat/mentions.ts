@@ -1,3 +1,5 @@
+import { insertAtCursor } from '../../lib/emojis'
+
 // Menciones (@cuenta) y respuestas de los mensajes de chat. Todo va dentro del
 // propio kind:9, sin tocar el relé: la mención es texto y la respuesta son tags
 // NIP-10 (`e` con marcador "reply" + `p` con el autor citado).
@@ -39,6 +41,13 @@ export function mentionQuery(text: string, caret: number): { start: number; quer
 export function applyMention(text: string, start: number, caret: number, account: string) {
   const insert = `@${account} `
   return { text: text.slice(0, start) + insert + text.slice(caret), caret: start + insert.length }
+}
+
+/** Inserta `@account ` en el cursor (o sobre la selección), separándolo con un espacio del texto previo si hace falta. */
+export function insertMention(text: string, start: number, end: number, account: string) {
+  const s = Math.max(0, Math.min(start, text.length))
+  const before = s > 0 && !/\s/.test(text[s - 1]) ? ' ' : ''
+  return insertAtCursor(text, start, end, `${before}@${account} `)
 }
 
 /** Cuentas que empiezan por `query`, sin repetir ni incluir la propia; máximo `limit`. */

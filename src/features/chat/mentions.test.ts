@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyMention, mentionCandidates, mentionQuery, mentionsAccount, parseReplyTo, quoteSnippet, repliesToPubkey, replyTags, splitMentions } from './mentions'
+import { applyMention, insertMention, mentionCandidates, mentionQuery, mentionsAccount, parseReplyTo, quoteSnippet, repliesToPubkey, replyTags, splitMentions } from './mentions'
 
 describe('mentions', () => {
   it('splitMentions separa menciones y respeta el resto', () => {
@@ -46,5 +46,11 @@ describe('mentions', () => {
   it('quoteSnippet recorta', () => {
     expect(quoteSnippet('a\n b')).toBe('a b')
     expect(quoteSnippet('x'.repeat(100), 10)).toBe('xxxxxxxxx…')
+  })
+  it('insertMention añade espacio previo solo si hace falta', () => {
+    expect(insertMention('', 0, 0, 'bea')).toEqual({ text: '@bea ', caret: 5 })
+    expect(insertMention('hola', 4, 4, 'bea')).toEqual({ text: 'hola @bea ', caret: 10 })
+    expect(insertMention('hola ', 5, 5, 'bea')).toEqual({ text: 'hola @bea ', caret: 10 })
+    expect(insertMention('ab cd', 3, 5, 'bea')).toEqual({ text: 'ab @bea ', caret: 8 })
   })
 })

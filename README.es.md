@@ -92,7 +92,7 @@ Las salas con mensajes que no has visto muestran una etiqueta «N nuevos», y el
 
 ## Menciones y respuestas
 
-Escribe `@cuenta` para mencionar a alguien (autocompletado con la gente de la sala; Tab/Intro) y usa «responder» bajo un mensaje para citarlo. Las menciones son texto del propio mensaje; una respuesta añade tags NIP-10 (`e` con el marcador `reply` y `p` con el autor citado), así que no hace falta tocar el relé. Los mensajes que te mencionan o responden a uno tuyo se resaltan y la lista de salas muestra una etiqueta `@N` (`src/features/chat/mentions.ts`).
+Escribe `@cuenta` para mencionar a alguien (autocompletado con la gente de la sala; Tab/Intro, o pulsa el nombre de quien escribe para insertarlo) y usa «responder» bajo un mensaje para citarlo. Las menciones son texto del propio mensaje; una respuesta añade tags NIP-10 (`e` con el marcador `reply` y `p` con el autor citado), así que no hace falta tocar el relé. Los mensajes que te mencionan o responden a uno tuyo se resaltan y la lista de salas muestra una etiqueta `@N` (`src/features/chat/mentions.ts`).
 
 ## Enlaces a salas
 

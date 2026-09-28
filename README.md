@@ -90,7 +90,7 @@ Rooms with messages you haven't seen show a "N new" badge, and the tab title car
 
 ## Mentions and replies
 
-Type `@account` to mention someone (autocomplete from people in the room; Tab/Enter) and use "reply" under a message to quote it. Mentions are plain text in the message; a reply adds NIP-10 tags (`e` with the `reply` marker plus `p` for the quoted author), so no relay change is needed. Messages that mention you or reply to yours are highlighted, and the room list shows an `@N` badge (`src/features/chat/mentions.ts`).
+Type `@account` to mention someone (autocomplete from people in the room; Tab/Enter, or click a sender's name to insert it) and use "reply" under a message to quote it. Mentions are plain text in the message; a reply adds NIP-10 tags (`e` with the `reply` marker plus `p` for the quoted author), so no relay change is needed. Messages that mention you or reply to yours are highlighted, and the room list shows an `@N` badge (`src/features/chat/mentions.ts`).
 
 ## Room links
 

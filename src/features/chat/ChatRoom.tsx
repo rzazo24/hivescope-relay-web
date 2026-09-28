@@ -11,7 +11,7 @@ import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
 import { isOwnMessage } from './deletion'
-import { applyMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet, splitMentions } from './mentions'
+import { applyMention, insertMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet, splitMentions } from './mentions'
 import { type ChatMessage, useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
@@ -109,6 +109,21 @@ export function ChatRoom({
       }
     }
     if (e.key === 'Escape' && replyingTo) setReplyingTo(null)
+  }
+
+  // Pulsar el nombre de alguien escribe su @mención en el mensaje (en el cursor si
+  // el campo tiene el foco; si no, al final).
+  const mentionUser = (acc: string) => {
+    const el = inputRef.current
+    const focused = el !== null && document.activeElement === el
+    const at = focused ? (el.selectionStart ?? draft.length) : draft.length
+    const { text, caret: c } = insertMention(draft, at, focused ? (el.selectionEnd ?? at) : at, acc)
+    setDraft(text)
+    setCaret(c)
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(c, c)
+    })
   }
 
   const startReply = (msg: ChatMessage) => {
@@ -210,9 +225,18 @@ export function ChatRoom({
               }
             >
               <div className="flex items-baseline gap-2 text-[11px] text-muted">
-                <span>
-                  {isMe ? t('chat.you') : senderNames.has(msg.pubkey) ? `@${senderNames.get(msg.pubkey)}` : shortPubkey(msg.pubkey)}
-                </span>
+                {isMe || !senderNames.has(msg.pubkey) ? (
+                  <span>{isMe ? t('chat.you') : shortPubkey(msg.pubkey)}</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => mentionUser(senderNames.get(msg.pubkey)!)}
+                    title={t('chat.mentionHint')}
+                    className="transition hover:text-accent"
+                  >
+                    @{senderNames.get(msg.pubkey)}
+                  </button>
+                )}
                 <span>{formatTime(msg.createdAt)}</span>
                 <button
                   type="button"
