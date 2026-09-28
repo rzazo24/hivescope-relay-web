@@ -54,7 +54,16 @@
     "snapDismiss": "no thanks",
     "notFound": "[!] room \"{{slug}}\" not found — it may have expired",
     "copyLink": "copy link",
-    "linkCopied": "[ok] link copied"
+    "linkCopied": "[ok] link copied",
+    "search": "search rooms…",
+    "sortBy": "sort:",
+    "noMatches": "// no rooms match",
+    "sort": {
+      "activity": "activity",
+      "online": "online",
+      "messages": "messages",
+      "name": "name"
+    }
   },
   "chat": {
     "connecting": "$ connecting…",

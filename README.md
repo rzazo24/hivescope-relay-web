@@ -100,6 +100,10 @@ While you type, the client sends (at most every 4 s) a presence heartbeat with a
 
 An opt-in "alerts" switch in the top bar shows a browser notification when a message mentions you or replies to yours while the tab is in the background; clicking it opens the room. Permission is asked once, the choice is remembered per device, and it only works while the app is open (no push: this is a backend-less SPA). Hidden where the browser has no Notification API (e.g. iOS Safari, most in-app browsers). See `src/lib/notifications.ts`.
 
+## Searching and sorting rooms
+
+With two or more rooms the list gets a search box (name or slug) and a sort switch: last activity (default), online now, message count, or name; the choice is remembered per device. Last activity comes from the same message query that feeds the counts, and updates live (`filterRooms`/`sortRooms` in `src/lib/rooms.ts`).
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

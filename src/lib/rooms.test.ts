@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canManageRoom, formatTimeRemaining, isRoomExpired, mergeRoom, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom, tallyMessages } from './rooms'
+import { canManageRoom, formatTimeRemaining, isRoomExpired, mergeRoom, isNewerRoom, parseRoomEvent, ROOM_D_PREFIX, type Room, slugifyRoom, tallyMessages, filterRooms, sortRooms, lastActivityByRoom } from './rooms'
 
 describe('slugifyRoom', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -254,5 +254,32 @@ describe('tallyMessages', () => {
     expect(c.get('a')).toBe(2)
     expect(c.get('b')).toBe(1)
     expect(c.size).toBe(2)
+  })
+})
+
+describe('filterRooms / sortRooms / lastActivityByRoom', () => {
+  const mk = (slug: string, name = slug): Room => ({ slug, name, admin: 'a', ownerPubkey: 'o', createdAt: 1, id: slug, expiresAt: 0 })
+  const rooms = [mk('beta', 'Beta'), mk('alfa', 'Alfa'), mk('gamma', 'Gamma')]
+  const stats = {
+    online: new Map([['gamma', 2], ['beta', 2]]),
+    messages: new Map([['alfa', 9], ['beta', 1]]),
+    activity: new Map([['beta', 50], ['gamma', 60], ['alfa', 10]]),
+  }
+  it('filtra por nombre o slug', () => {
+    expect(filterRooms(rooms, ' AL ').map((r) => r.slug)).toEqual(['alfa'])
+    expect(filterRooms(rooms, '')).toBe(rooms)
+    expect(filterRooms(rooms, 'zzz')).toEqual([])
+  })
+  it('ordena por cada criterio con desempates estables', () => {
+    expect(sortRooms(rooms, 'activity', stats).map((r) => r.slug)).toEqual(['gamma', 'beta', 'alfa'])
+    expect(sortRooms(rooms, 'online', stats).map((r) => r.slug)).toEqual(['gamma', 'beta', 'alfa'])
+    expect(sortRooms(rooms, 'messages', stats).map((r) => r.slug)).toEqual(['alfa', 'beta', 'gamma'])
+    expect(sortRooms(rooms, 'name', stats).map((r) => r.slug)).toEqual(['alfa', 'beta', 'gamma'])
+    expect(rooms.map((r) => r.slug)).toEqual(['beta', 'alfa', 'gamma'])
+  })
+  it('última actividad = mensaje más reciente por sala', () => {
+    const m = lastActivityByRoom([{ tags: [['t', 'a']], created_at: 5 }, { tags: [['t', 'a']], created_at: 9 }, { tags: [], created_at: 99 }])
+    expect(m.get('a')).toBe(9)
+    expect(m.size).toBe(1)
   })
 })

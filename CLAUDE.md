@@ -174,6 +174,12 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    button. Tested by stubbing `Notification` and `document.visibilityState` in
    Playwright (headless can't show real ones).
 
+   **Room list search/sort**: `RoomList` filters and orders with the pure
+   `filterRooms`/`sortRooms` (`rooms.ts`); "activity" uses `activity`
+   (last kind:9 per room, from the same `fetchRoomMessages` query as the counts,
+   bumped live), so rooms with no messages sort last. Sort mode is kept in
+   localStorage `hivescope:room-sort`.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

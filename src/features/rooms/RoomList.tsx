@@ -9,7 +9,7 @@ import { SITE_URL, SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import { publishRoomSnap } from '../../lib/hiveSnaps'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { roomUrl } from '../../lib/roomRoute'
-import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, slugifyRoom, type Room } from '../../lib/rooms'
+import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, filterRooms, formatTimeRemaining, ROOM_LIFETIME_OPTIONS, ROOM_SORTS, type RoomSort, slugifyRoom, sortRooms, type Room } from '../../lib/rooms'
 import { quoteSnippet } from '../chat/mentions'
 import { showNotification } from '../../lib/notifications'
 import { resolveHiveAccounts } from '../../lib/relay'
@@ -205,7 +205,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
     },
     [openRoom],
   )
-  const { rooms, counts, unread, directed, error, creating, createError, create, update } = useRooms(identity.publicKey, account, route.slug, onDirected)
+  const { rooms, counts, activity, unread, directed, error, creating, createError, create, update } = useRooms(identity.publicKey, account, route.slug, onDirected)
   const online = useOnline()
   // Título de la pestaña con el total de no leídos.
   const unreadTotal = [...unread.values()].reduce((a, b) => a + b, 0)
@@ -215,6 +215,25 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
       document.title = BASE_TITLE
     }
   }, [unreadTotal])
+  // Búsqueda y orden de la lista (el orden se recuerda en este dispositivo).
+  const [query, setQuery] = useState('')
+  const [sort, setSortState] = useState<RoomSort>(() => {
+    try {
+      const v = localStorage.getItem('hivescope:room-sort') as RoomSort | null
+      return v && ROOM_SORTS.includes(v) ? v : 'activity'
+    } catch {
+      return 'activity'
+    }
+  })
+  const setSort = (s: RoomSort) => {
+    setSortState(s)
+    try {
+      localStorage.setItem('hivescope:room-sort', s)
+    } catch {
+      // sin almacenamiento: solo dura la sesión
+    }
+  }
+  const shownRooms = rooms ? sortRooms(filterRooms(rooms, query), sort, { online: online.byRoom, messages: counts, activity }) : null
   const selectedRoom = route.slug ? (rooms?.find((r) => r.slug === route.slug) ?? null) : null
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
@@ -296,9 +315,38 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
         {error && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {error}</p>}
         {rooms?.length === 0 && <p className="text-muted">{t('rooms.empty')}</p>}
 
-        {rooms && rooms.length > 0 && (
+        {rooms && rooms.length > 1 && (
+          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('rooms.search')}
+              aria-label={t('rooms.search')}
+              autoComplete="off"
+              className="min-w-0 flex-1 rounded-md border border-border bg-code px-3 py-2 text-sm text-ink caret-accent outline-none focus:border-accent"
+            />
+            <div className="flex shrink-0 items-center gap-2 text-xs text-muted">
+              <span>{t('rooms.sortBy')}</span>
+              {ROOM_SORTS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={sort === s}
+                  onClick={() => setSort(s)}
+                  className={sort === s ? 'font-bold text-accent' : 'underline decoration-dotted underline-offset-2 hover:text-ink'}
+                >
+                  {t(`rooms.sort.${s}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {rooms && rooms.length > 0 && shownRooms?.length === 0 && <p className="text-muted">{t('rooms.noMatches')}</p>}
+
+        {shownRooms && shownRooms.length > 0 && (
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-md border border-border">
-            {rooms.map((room) => {
+            {shownRooms.map((room) => {
               const canManage = canManageRoom(room, identity.publicKey, account, adminNames, isSuperadmin)
               const adminLabel = `${t('rooms.adminPrefix')} ${
                 adminNames.has(room.admin) ? `@${adminNames.get(room.admin)}` : shortPubkey(room.admin)

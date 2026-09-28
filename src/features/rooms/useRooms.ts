@@ -3,7 +3,7 @@ import { Relay } from 'nostr-tools/relay'
 import { RELAY_URL } from '../../lib/config'
 import { isForMe } from '../chat/mentions'
 import { loadLastSeen, markSeen, saveLastSeen, tallyUnread, withBaseline, type LastSeen } from '../../lib/unread'
-import { createRoom, fetchRoomMessages, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, tallyMessages, type Room } from '../../lib/rooms'
+import { createRoom, fetchRoomMessages, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, tallyMessages, lastActivityByRoom, type Room } from '../../lib/rooms'
 
 // Cada cuánto se vuelve a pedir la lista completa. Las altas y ediciones llegan
 // en vivo por la suscripción, pero cuando el relé borra una sala caducada no
@@ -73,6 +73,8 @@ export function useRooms(
   // "Leído" = marca por sala guardada en este dispositivo; la sala abierta (con
   // la pestaña visible) se va marcando sola.
   const [counts, setCounts] = useState<Map<string, number>>(new Map())
+  // Hora del último mensaje de cada sala (para ordenar por actividad).
+  const [activity, setActivity] = useState<Map<string, number>>(new Map())
   const [unread, setUnread] = useState<Map<string, number>>(new Map())
   // De los no leídos, cuántos van dirigidos a mí (mención o respuesta).
   const [directed, setDirected] = useState<Map<string, number>>(new Map())
@@ -144,6 +146,7 @@ export function useRooms(
           const cur = currentRef.current
           if (cur && document.visibilityState === 'visible') markRead(cur, now)
           setCounts(tallyMessages(events))
+          setActivity(lastActivityByRoom(events))
           const u = tallyUnread(events, seenRef.current, myPubkey)
           const d = tallyUnread(events, seenRef.current, myPubkey, (e) => isForMe(e, accountRef.current, myPubkey))
           if (cur && document.visibilityState === 'visible') {
@@ -166,6 +169,7 @@ export function useRooms(
             const slug = event.tags.find((t) => t[0] === 't')?.[1]
             if (!slug) return
             setCounts((prev) => new Map(prev).set(slug, (prev.get(slug) ?? 0) + 1))
+            setActivity((prev) => new Map(prev).set(slug, Math.max(prev.get(slug) ?? 0, event.created_at)))
             if (event.pubkey === myPubkey) return
             if (isForMe(event, accountRef.current, myPubkey)) onDirectedRef.current?.({ pubkey: event.pubkey, content: event.content, slug })
             if (slug === currentRef.current && document.visibilityState === 'visible') {
@@ -244,5 +248,5 @@ export function useRooms(
     return m
   })()
 
-  return { rooms: visibleRooms, counts, unread: shownUnread, directed, error, refresh, creating, createError, create, updating, updateError, update }
+  return { rooms: visibleRooms, counts, activity, unread: shownUnread, directed, error, refresh, creating, createError, create, updating, updateError, update }
 }

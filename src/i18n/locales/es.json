@@ -54,7 +54,16 @@
     "snapDismiss": "no, gracias",
     "notFound": "[!] sala «{{slug}}» no encontrada — puede que haya caducado",
     "copyLink": "copiar enlace",
-    "linkCopied": "[ok] enlace copiado"
+    "linkCopied": "[ok] enlace copiado",
+    "search": "buscar salas…",
+    "sortBy": "orden:",
+    "noMatches": "// ninguna sala coincide",
+    "sort": {
+      "activity": "actividad",
+      "online": "conectados",
+      "messages": "mensajes",
+      "name": "nombre"
+    }
   },
   "chat": {
     "connecting": "$ conectando…",

@@ -255,3 +255,41 @@ export async function fetchRoomMessages(slugs: string[]): Promise<RoomMessage[]>
     relay.close()
   }
 }
+
+export type RoomSort = 'activity' | 'online' | 'messages' | 'name'
+export const ROOM_SORTS: RoomSort[] = ['activity', 'online', 'messages', 'name']
+
+/** Momento (unix s) del último mensaje de cada sala. */
+export function lastActivityByRoom(events: { tags: string[][]; created_at: number }[]): Map<string, number> {
+  const last = new Map<string, number>()
+  for (const e of events) {
+    const slug = e.tags.find((t) => t[0] === 't')?.[1]
+    if (slug && e.created_at > (last.get(slug) ?? 0)) last.set(slug, e.created_at)
+  }
+  return last
+}
+
+/** Salas cuyo nombre o slug contiene `query` (sin distinguir mayúsculas ni espacios de más). */
+export function filterRooms(rooms: Room[], query: string): Room[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return rooms
+  return rooms.filter((r) => r.name.toLowerCase().includes(q) || r.slug.includes(q))
+}
+
+/**
+ * Ordena sin mutar. En todos los modos, a igualdad se desempata por actividad
+ * reciente y por último por nombre, para que el orden sea estable.
+ */
+export function sortRooms(
+  rooms: Room[],
+  mode: RoomSort,
+  stats: { online: Map<string, number>; messages: Map<string, number>; activity: Map<string, number> },
+): Room[] {
+  const act = (r: Room) => stats.activity.get(r.slug) ?? 0
+  const byName = (a: Room, b: Room) => a.name.localeCompare(b.name)
+  const key = (r: Room) => (mode === 'online' ? (stats.online.get(r.slug) ?? 0) : mode === 'messages' ? (stats.messages.get(r.slug) ?? 0) : 0)
+  return [...rooms].sort((a, b) => {
+    if (mode === 'name') return byName(a, b)
+    return key(b) - key(a) || act(b) - act(a) || byName(a, b)
+  })
+}
