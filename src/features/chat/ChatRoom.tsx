@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import type { Room } from '../../lib/rooms'
+import { EmojiPicker } from '../../components/EmojiPicker'
+import { insertAtCursor } from '../../lib/emojis'
 import { useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
@@ -26,6 +28,7 @@ export function ChatRoom({
   const { messages, connected, sending, error, send } = useChatRoom(room.slug, identity)
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const senderNames = useHiveAccountNames(messages.map((m) => m.pubkey))
 
   useEffect(() => {
@@ -36,6 +39,18 @@ export function ChatRoom({
     const el = listRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [messages.length])
+
+  // Inserta el emoji en la posición del cursor (o reemplazando la selección) y
+  // devuelve el foco al campo con el cursor justo después.
+  const handleEmoji = (emoji: string) => {
+    const el = inputRef.current
+    const { text, caret } = insertAtCursor(draft, el?.selectionStart ?? draft.length, el?.selectionEnd ?? draft.length, emoji)
+    setDraft(text)
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(caret, caret)
+    })
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -88,6 +103,7 @@ export function ChatRoom({
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -96,6 +112,7 @@ export function ChatRoom({
           disabled={!connected || sending}
           className="min-w-0 flex-1 rounded-md border border-border bg-code px-3 py-2.5 text-sm text-ink caret-accent outline-none focus:border-accent disabled:opacity-60"
         />
+        <EmojiPicker onPick={handleEmoji} disabled={!connected || sending} />
         <button
           type="submit"
           disabled={!connected || sending || !draft.trim()}

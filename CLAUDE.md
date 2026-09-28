@@ -162,6 +162,14 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    polled from `relay.connected` every second to drive the UI's
    green/red status dot and "reconnecting" banner.
 
+**Emoji picker (desktop only)**: `EmojiPicker` (next to the chat send
+button) opens a curated grid from `src/lib/emojis.ts` and inserts at the
+input's caret via the pure `insertAtCursor`. It's hidden unless the device has
+a fine pointer (Tailwind `pointer-fine:` = `@media (pointer: fine)`) because
+mobile keyboards already have their own emoji picker. Custom list rather than
+a library on purpose (no new dependency, matches the terminal styling); emoji
+render with the OS emoji font, so they look different per platform.
+
 **Styling**: Tailwind v4, config-free — tokens are defined directly in
 `src/index.css` via `@theme` (colors, `--font-sans`/`--font-mono`). The
 "hacker terminal" look (monospace everywhere, `TerminalWindow` chrome with
