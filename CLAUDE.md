@@ -159,6 +159,24 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    (2) events that arrive while the initial list is still loading are ignored
    (the list or the next refresh covers them).
 
+   **Presence / online counter** (`usePresence` in `App`, `lib/presence.ts`):
+   while linked, the app publishes an ephemeral heartbeat (kind 20078, see the
+   relay's `presence.go`) every 25 s with the current room (`useRoomRoute` is a
+   shared module-level store now, precisely so `App` knows the room), on room
+   change, and a `left` beat on `pagehide`. It subscribes to everyone's beats
+   and `countOnline` counts distinct *people* (Hive accounts, resolved with
+   `resolveHiveAccounts`; unresolved pubkeys count individually meanwhile) with
+   a beat < 70 s old — two devices of one account = one, per room and in total.
+   Counts reach the UI through `OnlineProvider`/`useOnline` (top bar, room rows,
+   room header via `OnlineBadge`). Newcomers don't know who's already there
+   until their next beat, so every client answers a *new* pubkey with its own
+   beat after a random 0.3–2 s (skipped if it beat < 1 s ago; the guard must be
+   short because the last beat may predate the newcomer's subscription).
+   Time is local receipt time, not event `created_at`. Only linked accounts
+   announce, so unlinked visitors are invisible and uncounted. Verified with
+   several browser contexts against a local relay: totals, per-room counts,
+   same-account merge, leaving and closing a tab all update within seconds.
+
    **Hive snaps, opt-in** (`src/lib/hiveSnaps.ts`): after a room is
    created, `RoomList` only *offers* to share it (`snapOffer`); nothing is
    posted unless the user presses "share on Hive". Then `publishRoomSnap`

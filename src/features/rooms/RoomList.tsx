@@ -2,6 +2,8 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChatRoom } from '../chat/ChatRoom'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
+import { OnlineBadge } from '../../components/OnlineBadge'
+import { useOnline } from '../../hooks/usePresence'
 import { useRoomRoute } from '../../hooks/useRoomRoute'
 import { SITE_URL, SUPERADMIN_HIVE_ACCOUNT } from '../../lib/config'
 import { publishRoomSnap } from '../../lib/hiveSnaps'
@@ -51,12 +53,14 @@ function RoomRow({
   room,
   canManage,
   adminLabel,
+  online,
   onSelect,
   onSave,
 }: {
   room: Room
   canManage: boolean
   adminLabel: string
+  online: number
   onSelect: () => void
   onSave: (name: string, lifetimeSeconds: number) => Promise<boolean>
 }) {
@@ -140,6 +144,9 @@ function RoomRow({
           {timeRemaining && ` · ${t('rooms.lifetimePrompt')} ${timeRemaining}`}
         </span>
       </button>
+      <span className="flex shrink-0 items-center px-2">
+        <OnlineBadge count={online} />
+      </span>
       {canManage && (
         <button
           type="button"
@@ -159,6 +166,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
   const { t } = useTranslation()
   const { rooms, error, creating, createError, create, update } = useRooms()
   const route = useRoomRoute()
+  const online = useOnline()
   const selectedRoom = route.slug ? (rooms?.find((r) => r.slug === route.slug) ?? null) : null
   const [newRoomName, setNewRoomName] = useState('')
   const [newRoomLifetimeSeconds, setNewRoomLifetimeSeconds] = useState<number>(DEFAULT_ROOM_LIFETIME_SECONDS)
@@ -253,6 +261,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
                   room={room}
                   canManage={canManage}
                   adminLabel={adminLabel}
+                  online={online.byRoom.get(room.slug) ?? 0}
                   onSelect={() => route.open(room.slug)}
                   onSave={(name, lifetimeSeconds) => update(room.slug, name, room.admin, identity.secretKey, lifetimeSeconds)}
                 />

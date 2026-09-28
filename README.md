@@ -76,6 +76,10 @@ kick/ban capability.
 
 Each of your messages has a "delete" link (with confirmation). It sends a NIP-09 deletion signed with your key: the relay removes the message and it disappears live for everyone in the room. It works from any device linked to the same Hive account, and it can't recall copies anyone already saw or saved.
 
+## Online counter
+
+The people icon shows how many Hive accounts are online, in total (top bar), per room (room list) and in the current room. Linked clients send ephemeral heartbeats saying which room they're in; nothing is stored, and two devices of the same account count once.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

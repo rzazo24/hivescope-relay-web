@@ -4,16 +4,23 @@ import { ConfirmModal } from './components/ConfirmModal'
 import { HelpModal } from './components/HelpModal'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { TerminalWindow } from './components/TerminalWindow'
+import { OnlineBadge } from './components/OnlineBadge'
 import { ThemeSwitcher } from './components/ThemeSwitcher'
 import { LinkScreen } from './features/link/LinkScreen'
 import { useHiveLink } from './features/link/useHiveLink'
 import { RoomList } from './features/rooms/RoomList'
+import { OnlineProvider, usePresence } from './hooks/usePresence'
+import { useRoomRoute } from './hooks/useRoomRoute'
 
 function App() {
   const { t } = useTranslation()
   const { identity, keychainStatus, linkStatus, submitting, error, link, logout } = useHiveLink()
   const linked = linkStatus.state === 'linked'
   const [helpOpen, setHelpOpen] = useState(false)
+  // Presencia: mientras estás vinculado, anuncias en qué sala estás y ves cuántas
+  // cuentas hay en línea (en total, por sala en la lista y en la cabecera).
+  const { slug: currentRoom } = useRoomRoute()
+  const online = usePresence(identity, currentRoom, linked)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   // La pantalla de vinculación es solo un formulario chico: no hace falta
@@ -28,6 +35,7 @@ function App() {
     // verticalmente dejaba mucho hueco vacío arriba y abajo en vistas cortas
     // como la lista de salas. En pantallas grandes el contenedor crece con el
     // ancho para no dejar tanto margen lateral.
+    <OnlineProvider value={online}>
     <main
       className={`mx-auto flex min-h-svh w-full ${widthClass} flex-col justify-start gap-4 px-4 py-4 transition-[max-width] sm:px-6 sm:py-6`}
     >
@@ -72,6 +80,7 @@ function App() {
           >
             {t('help.trigger')}
           </button>
+          {linked && <OnlineBadge count={online.total} />}
           <ThemeSwitcher />
           <LanguageSwitcher />
         </div>
@@ -109,6 +118,7 @@ function App() {
         )}
       </TerminalWindow>
     </main>
+    </OnlineProvider>
   )
 }
 

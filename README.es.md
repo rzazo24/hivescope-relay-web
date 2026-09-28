@@ -78,6 +78,10 @@ expulsar/silenciar cuentas.
 
 Cada mensaje tuyo tiene un enlace "borrar" (con confirmación). Envía un borrado NIP-09 firmado con tu clave: el relé elimina el mensaje y desaparece en vivo para todos en la sala. Funciona desde cualquier dispositivo vinculado a la misma cuenta Hive, y no puede recuperar copias que alguien ya haya visto o guardado.
 
+## Contador de conectados
+
+El icono de personas muestra cuántas cuentas Hive están en línea: en total (barra superior), por sala (lista de salas) y en la sala actual. Los clientes vinculados envían latidos efímeros indicando en qué sala están; no se guarda nada, y dos dispositivos de la misma cuenta cuentan una vez.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.
