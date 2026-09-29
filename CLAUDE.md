@@ -186,15 +186,6 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    building the URL. Disclosed in the help's privacy text (the image host sees
    viewers' IPs) — keep that if you change the source.
 
-   **Message translation** (`src/lib/translate.ts`, per-message state in
-   `ChatRoom`) uses the browser's on-device `LanguageDetector` + `Translator`
-   only — deliberately no external service (message text would leave the
-   device). `translationSupported()` gates the link; `planTranslation` (pure,
-   tested) decides translate / same-language / unknown from the detector's
-   answer. It must run from a click (the first use can download a language
-   pack). Playwright's Chromium exposes the APIs but has no models, so tests
-   stub `window.Translator`/`LanguageDetector`.
-
    **Links and length** (`chat/linkify.ts`): `splitMessage` splits URLs *first*
    and then mentions on the rest (so `@x` inside a URL isn't a mention; the
    same stripping is in `mentionsAccount`). Only http(s) with a dotted host

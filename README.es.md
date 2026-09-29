@@ -110,10 +110,6 @@ Con dos o más salas la lista muestra un buscador (nombre o slug) y un selector 
 
 Cada persona que escribe en el chat (y cada una de la lista de conectados) muestra su foto de perfil de Hive, cargada desde `https://images.hive.blog/u/<cuenta>/avatar/small`, con una inicial de reserva. Es la única petición a terceros que hace la app para contenido, y se avisa en la sección de privacidad de la ayuda (`src/components/Avatar.tsx`, `src/lib/hiveAvatar.ts`).
 
-## Traducción de mensajes
-
-Los mensajes de los demás llevan un enlace «traducir» cuando el navegador tiene las APIs integradas Translator y LanguageDetector (Chrome/Edge de escritorio recientes). La traducción se hace en el dispositivo —no se envía nada a servicios de terceros— al idioma de la interfaz; si ya está en tu idioma, si no se reconoce o si el par no está soportado, se avisa. Donde no existen las APIs (Firefox, Safari, móvil) el enlace no se muestra. Ver `src/lib/translate.ts`.
-
 ## Enlaces y longitud de los mensajes
 
 Las URL http(s) de los mensajes se muestran como enlaces (`target=_blank`, `rel="noopener noreferrer nofollow"`; la puntuación final se deja fuera y una `@` dentro de una URL no es una mención). Los mensajes tienen un máximo de 2000 caracteres, que impone el relé y replica el `maxLength` del campo de texto (`src/features/chat/linkify.ts`).

@@ -87,15 +87,6 @@
     "deleteConfirm": "¿Borrar este mensaje? Desaparece para todos en la sala y no se puede deshacer.",
     "deleteConfirmButton": "> borrar",
     "deleteCancel": "cancelar",
-    "translate": "traducir",
-    "translating": "traduciendo…",
-    "translateDownloading": "descargando el modelo de traducción… {{percent}}%",
-    "translateError": "no se pudo traducir este mensaje",
-    "translatedFrom": "traducido del {{lang}}",
-    "translateSame": "ya está en tu idioma",
-    "translateUnavailable": "tu navegador no puede traducir desde {{lang}}",
-    "translateUnknown": "no se pudo identificar el idioma",
-    "translateHide": "ocultar",
     "react": "reaccionar",
     "loadOlder": "cargar mensajes anteriores",
     "loadingOlder": "cargando…"
@@ -127,7 +118,7 @@
       },
       {
         "heading": "$ menciones_respuestas",
-        "body": "Escribe @ y un nombre de cuenta para mencionar a alguien (pulsa el nombre de quien escribe para insertarlo, o las sugerencias salen de quienes han escrito o están en la sala; Tab o Intro eligen una). Las menciones se resaltan, y un mensaje que te menciona o responde a uno tuyo queda marcado y muestra una etiqueta @ en la lista de salas. El enlace «responder» de cada mensaje lo cita encima del tuyo. Todo forma parte del mensaje público, así que las menciones y a quién respondes las puede ver cualquiera, como el resto. Bajo el cuadro de mensaje verás «@nombre está escribiendo…» mientras alguien de la sala escribe (usa la misma señal efímera de presencia, así que es pública y no se guarda en ningún sitio). El interruptor «avisos» de la barra superior activa notificaciones del navegador para esas menciones y respuestas mientras la pestaña está en segundo plano (pide permiso una vez; solo funcionan con la app abierta, no hay push). Si tu navegador tiene traductor integrado (Chrome o Edge de escritorio recientes), los mensajes de los demás llevan un enlace «traducir» que los traduce al idioma de la app en tu dispositivo: el texto no se envía a ningún sitio; la primera vez el navegador puede descargar un paquete de idioma. No aparece en navegadores sin esa función. Los enlaces (http/https) de los mensajes son pulsables y se abren en una pestaña nueva; los mensajes pueden tener hasta 2000 caracteres. Usa el botón ☺+ de un mensaje para reaccionar con uno de seis emojis (👍 ❤️ 😂 🎉 😮 😢); los contadores salen bajo el mensaje y cuentan una vez cada cuenta de Hive. Pulsa tu propia reacción para quitarla, también desde otro de tus dispositivos. Las reacciones son públicas, igual que los mensajes."
+        "body": "Escribe @ y un nombre de cuenta para mencionar a alguien (pulsa el nombre de quien escribe para insertarlo, o las sugerencias salen de quienes han escrito o están en la sala; Tab o Intro eligen una). Las menciones se resaltan, y un mensaje que te menciona o responde a uno tuyo queda marcado y muestra una etiqueta @ en la lista de salas. El enlace «responder» de cada mensaje lo cita encima del tuyo. Todo forma parte del mensaje público, así que las menciones y a quién respondes las puede ver cualquiera, como el resto. Bajo el cuadro de mensaje verás «@nombre está escribiendo…» mientras alguien de la sala escribe (usa la misma señal efímera de presencia, así que es pública y no se guarda en ningún sitio). El interruptor «avisos» de la barra superior activa notificaciones del navegador para esas menciones y respuestas mientras la pestaña está en segundo plano (pide permiso una vez; solo funcionan con la app abierta, no hay push). Los enlaces (http/https) de los mensajes son pulsables y se abren en una pestaña nueva; los mensajes pueden tener hasta 2000 caracteres. Usa el botón ☺+ de un mensaje para reaccionar con uno de seis emojis (👍 ❤️ 😂 🎉 😮 😢); los contadores salen bajo el mensaje y cuentan una vez cada cuenta de Hive. Pulsa tu propia reacción para quitarla, también desde otro de tus dispositivos. Las reacciones son públicas, igual que los mensajes."
       },
       {
         "heading": "$ caducidad",
