@@ -214,11 +214,17 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    that message (`myReactionIds`), since another device may have made it.
    `REACTION_EMOJIS` mirrors the relay's `ReactionEmojis`.
 
-   **Connection budget warning**: one page load opens ~12 WebSockets (each hook
-   connects on its own) and the relay's `ConnectionRateLimiter` is 10/min, burst
-   30 *per IP*. Three quick reloads (or 3 Playwright contexts) get 429s — the
-   cause of many "nothing loads" test failures. Consolidating into one shared
-   connection would fix it.
+   **One shared relay connection** (`lib/sharedRelay.ts`): `getRelay()` opens the
+   single WebSocket for the whole tab (nostr-tools reconnects it on its own) and
+   `queryOnce(filters)` does one-shot queries on it (resolves at EOSE, or with
+   `complete: false` if the relay closes the sub or 10 s pass — it never
+   hangs). Hooks close only their *subscriptions* on cleanup, never the relay.
+   This exists because each hook/query used to open its own connection (~12 per
+   page load) and the relay's per-IP connection limiter (10/min, burst 30)
+   returned 429s after a couple of reloads. The REQ limiter (now 60/min, burst
+   180, per IP) is the next budget: a page load is ~10 REQs, so avoid adding
+   subscriptions casually — merge filters into one REQ when you can. In tests,
+   several browsers share the IP, so keep an eye on both limits.
 
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s

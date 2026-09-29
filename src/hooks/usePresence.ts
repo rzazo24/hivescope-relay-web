@@ -1,7 +1,7 @@
 import { finalizeEvent } from 'nostr-tools/pure'
-import { Relay } from 'nostr-tools/relay'
+import type { Relay } from 'nostr-tools/relay'
+import type { Subscription } from 'nostr-tools/abstract-relay'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { RELAY_URL } from '../lib/config'
 import type { NostrIdentity } from '../lib/nostrIdentity'
 import {
   countOnline,
@@ -17,6 +17,7 @@ import {
   typingByRoom,
 } from '../lib/presence'
 import { resolveHiveAccounts } from '../lib/relay'
+import { getRelay } from '../lib/sharedRelay'
 
 // No contestar a una llegada si acabamos de latir hace menos de esto. Tiene que ser
 // corto: nuestro último latido pudo salir justo ANTES de que el recién llegado
@@ -137,15 +138,13 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
       beat(false, true)
     }
 
-    Relay.connect(RELAY_URL, { enableReconnect: true })
+    let sub: Subscription | null = null
+    getRelay()
       .then((r) => {
-        if (cancelled) {
-          r.close()
-          return
-        }
+        if (cancelled) return
         relay = r
         connectedRef.current = true
-        r.subscribe([{ kinds: [PRESENCE_KIND], limit: 0 }], {
+        sub = r.subscribe([{ kinds: [PRESENCE_KIND], limit: 0 }], {
           onevent(event) {
             const room = event.tags.find((t) => t[0] === 't')?.[1] ?? null
             const left = event.tags.some((t) => t[0] === 'left')
@@ -183,7 +182,7 @@ export function usePresence(identity: NostrIdentity, slug: string | null, enable
       notifyRef.current = () => {}
       clearTimeout(respondTimer)
       window.removeEventListener('pagehide', onHide)
-      relay?.close()
+      sub?.close()
     }
   }, [enabled, identity])
 

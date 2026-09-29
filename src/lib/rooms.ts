@@ -1,5 +1,4 @@
-import { Relay } from 'nostr-tools/relay'
-import { RELAY_URL } from './config'
+import { queryOnce } from './sharedRelay'
 import { publishEvent } from './relay'
 
 export const ROOM_D_PREFIX = 'room:'
@@ -125,27 +124,17 @@ export function isNewerRoom(a: Room, b: Room): boolean {
  * con la fila más nueva, igual que hace el relé en `findRoomOwnership`.
  */
 export async function listRooms(): Promise<Room[]> {
-  const relay = await Relay.connect(RELAY_URL)
-  try {
-    return await new Promise((resolve) => {
-      const bySlug = new Map<string, Room>()
-
-      const sub = relay.subscribe([{ kinds: [ROOM_META_KIND], limit: 500 }], {
-        onevent(event) {
-          const room = parseRoomEvent(event)
-          if (!room) return
-          const existing = bySlug.get(room.slug)
-          if (!existing || isNewerRoom(room, existing)) bySlug.set(room.slug, room)
-        },
-        oneose() {
-          sub.close()
-          resolve([...bySlug.values()])
-        },
-      })
-    })
-  } finally {
-    relay.close()
+  const { events, complete } = await queryOnce([{ kinds: [ROOM_META_KIND], limit: 500 }])
+  // sin respuesta y sin nada recibido no hay lista que mostrar: que se vea el error
+  if (!complete && events.length === 0) throw new Error('relay did not answer')
+  const bySlug = new Map<string, Room>()
+  for (const event of events) {
+    const room = parseRoomEvent(event)
+    if (!room) continue
+    const existing = bySlug.get(room.slug)
+    if (!existing || isNewerRoom(room, existing)) bySlug.set(room.slug, room)
   }
+  return [...bySlug.values()]
 }
 
 /**
@@ -243,24 +232,8 @@ export type RoomMessage = { tags: string[][]; pubkey: string; created_at: number
 /** Mensajes guardados en las salas dadas: una sola consulta al relé para todas. */
 export async function fetchRoomMessages(slugs: string[]): Promise<RoomMessage[]> {
   if (slugs.length === 0) return []
-  const relay = await Relay.connect(RELAY_URL)
-  try {
-    return await new Promise((resolve) => {
-      const events: RoomMessage[] = []
-      const sub = relay.subscribe([{ kinds: [9], '#t': slugs, limit: 5000 }], {
-        onevent: (event) => events.push(event),
-        oneose() {
-          sub.close()
-          resolve(events)
-        },
-        onclose() {
-          resolve(events)
-        },
-      })
-    })
-  } finally {
-    relay.close()
-  }
+  const { events } = await queryOnce([{ kinds: [9], '#t': slugs, limit: 5000 }])
+  return events
 }
 
 export type RoomSort = 'activity' | 'online' | 'messages' | 'name'

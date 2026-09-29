@@ -1,16 +1,11 @@
 import { type EventTemplate, finalizeEvent } from 'nostr-tools/pure'
-import { Relay } from 'nostr-tools/relay'
-import { RELAY_URL } from './config'
+import { getRelay, queryOnce } from './sharedRelay'
 
 /** Firma `template` con secretKey y lo publica en hivescope-relay. Lanza si el relé lo rechaza. */
 export async function publishEvent(template: EventTemplate, secretKey: Uint8Array) {
   const event = finalizeEvent(template, secretKey)
-  const relay = await Relay.connect(RELAY_URL)
-  try {
-    await relay.publish(event)
-  } finally {
-    relay.close()
-  }
+  const relay = await getRelay()
+  await relay.publish(event)
   return event
 }
 
@@ -21,28 +16,16 @@ export async function publishEvent(template: EventTemplate, secretKey: Uint8Arra
  * si un pubkey puede publicar mensajes de chat.
  */
 export async function findHiveLink(pubkey: string): Promise<{ account: string } | null> {
-  const relay = await Relay.connect(RELAY_URL)
-  try {
-    return await new Promise((resolve) => {
-      let found: { account: string } | null = null
-
-      const sub = relay.subscribe([{ kinds: [30078], authors: [pubkey], limit: 10 }], {
-        onevent(event) {
-          const dTag = event.tags.find((t) => t[0] === 'd')?.[1]
-          if (dTag !== 'hive-link') return
-
-          const account = event.tags.find((t) => t[0] === 'hive_account')?.[1]
-          if (account) found = { account }
-        },
-        oneose() {
-          sub.close()
-          resolve(found)
-        },
-      })
-    })
-  } finally {
-    relay.close()
+  const { events, complete } = await queryOnce([{ kinds: [30078], authors: [pubkey], limit: 10 }])
+  let found: { account: string } | null = null
+  for (const event of events) {
+    if (event.tags.find((t) => t[0] === 'd')?.[1] !== 'hive-link') continue
+    const account = event.tags.find((t) => t[0] === 'hive_account')?.[1]
+    if (account) found = { account }
   }
+  // sin respuesta completa no se puede afirmar que no haya vinculación
+  if (!found && !complete) throw new Error('relay did not answer')
+  return found
 }
 
 // Cachea pubkey -> cuenta hive (o null si no tiene vinculación) para toda la
@@ -71,40 +54,19 @@ export async function resolveHiveAccounts(pubkeys: string[]): Promise<Map<string
 
   if (uncached.length === 0) return result
 
-  const relay = await Relay.connect(RELAY_URL)
-  let failed = false
-  try {
-    await new Promise<void>((resolve) => {
-      const seen = new Set<string>()
-
-      const sub = relay.subscribe([{ kinds: [30078], authors: uncached, limit: uncached.length * 5 }], {
-        // Si el relé cierra la suscripción sin EOSE (por ejemplo por rate limit)
-        // no se sabe nada de esos pubkeys: se sigue sin cachearlos como "sin
-        // cuenta" para que se puedan volver a pedir. Sin esto la promesa no se
-        // resolvía nunca.
-        onclose() {
-          failed = true
-          resolve()
-        },
-        onevent(event) {
-          const dTag = event.tags.find((t) => t[0] === 'd')?.[1]
-          if (dTag !== 'hive-link') return
-
-          const account = event.tags.find((t) => t[0] === 'hive_account')?.[1]
-          if (!account || seen.has(event.pubkey)) return
-          seen.add(event.pubkey)
-
-          hiveAccountCache.set(event.pubkey, account)
-          result.set(event.pubkey, account)
-        },
-        oneose() {
-          sub.close()
-          resolve()
-        },
-      })
-    })
-  } finally {
-    relay.close()
+  const { events, complete } = await queryOnce([{ kinds: [30078], authors: uncached, limit: uncached.length * 5 }])
+  // Si el relé cerró la consulta sin terminar (p. ej. por rate limit) o no respondió,
+  // no se sabe nada de los pubkeys que faltan: no se cachean como "sin cuenta"
+  // para poder volver a pedirlos.
+  const failed = !complete
+  const seen = new Set<string>()
+  for (const event of events) {
+    if (event.tags.find((t) => t[0] === 'd')?.[1] !== 'hive-link') continue
+    const account = event.tags.find((t) => t[0] === 'hive_account')?.[1]
+    if (!account || seen.has(event.pubkey)) continue
+    seen.add(event.pubkey)
+    hiveAccountCache.set(event.pubkey, account)
+    result.set(event.pubkey, account)
   }
 
   // lo que se pidió y no apareció, también se cachea (como "sin cuenta") para

@@ -1,9 +1,10 @@
 import { finalizeEvent } from 'nostr-tools/pure'
-import { Relay } from 'nostr-tools/relay'
+import type { Relay } from 'nostr-tools/relay'
+import type { Subscription } from 'nostr-tools/abstract-relay'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { RELAY_URL } from '../../lib/config'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { resolveHiveAccounts } from '../../lib/relay'
+import { getRelay } from '../../lib/sharedRelay'
 import { applyDeletion } from './deletion'
 import { parseReplyTo, replyTags } from './mentions'
 import { addReaction, parseReaction, REACTION_KIND, type Reaction, removeReactions } from './reactions'
@@ -75,12 +76,10 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
 
     let pollHandle: ReturnType<typeof setInterval> | undefined
 
-    Relay.connect(RELAY_URL, { enableReconnect: true })
+    const subs: Subscription[] = []
+    getRelay()
       .then((relay) => {
-        if (cancelled) {
-          relay.close()
-          return
-        }
+        if (cancelled) return
         relayRef.current = relay
         setConnected(true)
 
@@ -91,7 +90,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
         // sondeamos para reflejar caídas/reconexiones reales en la UI.
         pollHandle = setInterval(() => setConnected(relay.connected), 1000)
 
-        relay.subscribe([{ kinds: [9], '#t': [slug], limit: 200 }], {
+        subs.push(relay.subscribe([{ kinds: [9], '#t': [slug], limit: 200 }], {
           onevent(event) {
             if (seen.has(event.id)) return
             seen.add(event.id)
@@ -111,31 +110,36 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
               ),
             )
           },
-        })
+        }))
 
         // Reacciones (kind 7) de esta sala, con historial y en vivo.
-        relay.subscribe([{ kinds: [REACTION_KIND], '#t': [slug], limit: 2000 }], {
-          onevent(event) {
-            const reaction = parseReaction(event)
-            if (reaction) setReactions((prev) => addReaction(prev, reaction))
-          },
-        })
+        subs.push(
+          relay.subscribe([{ kinds: [REACTION_KIND], '#t': [slug], limit: 2000 }], {
+            onevent(event) {
+              const reaction = parseReaction(event)
+              if (reaction) setReactions((prev) => addReaction(prev, reaction))
+            },
+          }),
+        )
 
         // Borrados en vivo: cuando alguien retira un mensaje (kind 5, NIP-09),
         // desaparece también para quien ya lo tiene en pantalla. Sin historial
         // (since = ahora): lo ya borrado antes de entrar no llega en el kind 9.
-        relay.subscribe([{ kinds: [5], since: Math.floor(Date.now() / 1000) }], {
-          onevent(event) {
-            applyDeletionEvent(event)
-          },
-        })
+        subs.push(
+          relay.subscribe([{ kinds: [5], since: Math.floor(Date.now() / 1000) }], {
+            onevent(event) {
+              applyDeletionEvent(event)
+            },
+          }),
+        )
       })
       .catch((err) => setError(err instanceof Error ? err.message : String(err)))
 
     return () => {
       cancelled = true
       if (pollHandle) clearInterval(pollHandle)
-      relayRef.current?.close()
+      // solo se cierran las suscripciones: la conexión es compartida (lib/sharedRelay)
+      subs.forEach((sub) => sub.close())
       relayRef.current = null
     }
   }, [slug, applyDeletionEvent])

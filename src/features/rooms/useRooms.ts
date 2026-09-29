@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Relay } from 'nostr-tools/relay'
-import { RELAY_URL } from '../../lib/config'
+import type { Subscription } from 'nostr-tools/abstract-relay'
+import { getRelay } from '../../lib/sharedRelay'
 import { isForMe } from '../chat/mentions'
 import { loadLastSeen, markSeen, saveLastSeen, tallyUnread, withBaseline, type LastSeen } from '../../lib/unread'
 import { createRoom, fetchRoomMessages, isRoomExpired, listRooms, mergeRoom, parseRoomEvent, ROOM_META_KIND, tallyMessages, lastActivityByRoom, type Room } from '../../lib/rooms'
@@ -44,15 +44,11 @@ export function useRooms(
   // relectura lo recogerá.
   useEffect(() => {
     let cancelled = false
-    let relay: Relay | null = null
-    Relay.connect(RELAY_URL, { enableReconnect: true })
+    let sub: Subscription | null = null
+    getRelay()
       .then((r) => {
-        if (cancelled) {
-          r.close()
-          return
-        }
-        relay = r
-        r.subscribe([{ kinds: [ROOM_META_KIND], limit: 0 }], {
+        if (cancelled) return
+        sub = r.subscribe([{ kinds: [ROOM_META_KIND], limit: 0 }], {
           onevent(event) {
             const room = parseRoomEvent(event)
             if (room) setRooms((prev) => (prev === null ? prev : mergeRoom(prev, room)))
@@ -64,7 +60,7 @@ export function useRooms(
       })
     return () => {
       cancelled = true
-      relay?.close()
+      sub?.close()
     }
   }, [])
 
@@ -159,12 +155,11 @@ export function useRooms(
         .catch(() => {})
     load()
     const id = setInterval(load, REFRESH_MS)
-    let relay: Relay | null = null
-    Relay.connect(RELAY_URL, { enableReconnect: true })
+    let sub: Subscription | null = null
+    getRelay()
       .then((r) => {
-        if (cancelled) return r.close()
-        relay = r
-        r.subscribe([{ kinds: [9], limit: 0 }], {
+        if (cancelled) return
+        sub = r.subscribe([{ kinds: [9], limit: 0 }], {
           onevent(event) {
             const slug = event.tags.find((t) => t[0] === 't')?.[1]
             if (!slug) return
@@ -187,7 +182,7 @@ export function useRooms(
     return () => {
       cancelled = true
       clearInterval(id)
-      relay?.close()
+      sub?.close()
     }
   }, [slugsKey, myPubkey, markRead])
 

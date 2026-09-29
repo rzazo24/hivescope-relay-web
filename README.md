@@ -124,6 +124,10 @@ The relay's rejection reasons stay in English on the wire (NIP-01), but the ones
 
 Each message has a ☺+ button to react with one of six emojis; chips under the message count distinct Hive accounts and highlight yours. A reaction is a NIP-25 `kind:7` event (`e` message id, `p` author, `t` room), removed with a NIP-09 delete — which also works from another device of the same account. The relay only accepts its closed emoji list, and the frontend's `REACTION_EMOJIS` (`src/features/chat/reactions.ts`) must match it. Needs the relay version that accepts kind 7.
 
+## One relay connection
+
+The whole app shares a single WebSocket to the relay (`src/lib/sharedRelay.ts`) instead of opening one per hook or query, so reloading the page a few times no longer trips the relay's per-IP connection limit. One-shot queries time out after 10 s instead of hanging.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.
