@@ -1,4 +1,4 @@
-import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { describeRelayError } from '../../lib/relayErrors'
 import { translateText, translationSupported, type TranslateResult } from '../../lib/translate'
@@ -63,7 +63,7 @@ export function ChatRoom({
   onBack: () => void
 }) {
   const { t, i18n } = useTranslation()
-  const { messages, reactions, connected, sending, error, send, remove, react, unreact } = useChatRoom(room.slug, identity)
+  const { messages, reactions, hasMore, loadingOlder, loadOlder, connected, sending, error, send, remove, react, unreact } = useChatRoom(room.slug, identity)
   const online = useOnline()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -188,14 +188,31 @@ export function ChatRoom({
     el?.scrollIntoView({ block: 'center' })
   }
 
-  useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
-  }, [])
-
+  // Al fondo cuando llega un mensaje NUEVO (cambia el último), no cuando se
+  // añade historial por arriba: ahí hay que conservar lo que se está leyendo.
+  const newestId = messages[messages.length - 1]?.id
   useEffect(() => {
     const el = listRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [messages.length])
+  }, [newestId])
+
+  const oldestId = messages[0]?.id
+  const anchorRef = useRef<{ height: number; top: number } | null>(null)
+  const requestOlder = () => {
+    const el = listRef.current
+    if (!el || loadingOlder || !hasMore) return
+    anchorRef.current = { height: el.scrollHeight, top: el.scrollTop }
+    void loadOlder()
+  }
+  // Tras añadir mensajes por arriba, se recoloca el scroll para que no salte.
+  useLayoutEffect(() => {
+    const el = listRef.current
+    const anchor = anchorRef.current
+    if (el && anchor) {
+      el.scrollTop = el.scrollHeight - anchor.height + anchor.top
+      anchorRef.current = null
+    }
+  }, [oldestId])
 
   // Inserta el emoji en la posición del cursor (o reemplazando la selección) y
   // devuelve el foco al campo con el cursor justo después.
@@ -255,8 +272,21 @@ export function ChatRoom({
 
       <div
         ref={listRef}
+        onScroll={(e) => {
+          if (e.currentTarget.scrollTop < 60) requestOlder()
+        }}
         className="flex h-[50vh] min-h-72 flex-col gap-2 overflow-y-auto rounded-md border border-border bg-code p-3 sm:h-[55vh] lg:h-[60vh]"
       >
+        {hasMore && (
+          <button
+            type="button"
+            onClick={requestOlder}
+            disabled={loadingOlder}
+            className="self-center text-xs text-muted underline decoration-dotted underline-offset-2 hover:text-ink disabled:no-underline disabled:opacity-60"
+          >
+            {loadingOlder ? t('chat.loadingOlder') : t('chat.loadOlder')}
+          </button>
+        )}
         {!connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.connecting')}</p>}
         {connected && messages.length === 0 && <p className="text-xs text-muted">{t('chat.empty')}</p>}
 

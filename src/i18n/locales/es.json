@@ -96,7 +96,9 @@
     "translateUnavailable": "tu navegador no puede traducir desde {{lang}}",
     "translateUnknown": "no se pudo identificar el idioma",
     "translateHide": "ocultar",
-    "react": "reaccionar"
+    "react": "reaccionar",
+    "loadOlder": "cargar mensajes anteriores",
+    "loadingOlder": "cargando…"
   },
   "help": {
     "trigger": "ayuda",
@@ -117,7 +119,7 @@
       },
       {
         "heading": "$ salas",
-        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin (desde cualquiera de tus dispositivos vinculados a esa misma cuenta Hive), o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas. Cada sala tiene un enlace directo (chat.hivescope.xyz/r/nombre-de-sala) que puedes copiar con el botón \"copiar enlace\" dentro de la sala; al abrirlo, y con la cuenta vinculada, entras directamente. El enlace deja de funcionar cuando la sala caduca."
+        "body": "Cualquier cuenta vinculada puede crear una sala; quien cree primero un nombre determinado pasa a ser su dueña. A partir de ahí, solo la dueña de la sala, la cuenta indicada como su admin (desde cualquiera de tus dispositivos vinculados a esa misma cuenta Hive), o la cuenta operadora del relé pueden renombrarla o delegar la administración en otra cuenta — pero cualquier cuenta vinculada puede seguir escribiendo en cualquier sala, los nombres de sala no están reservados para que escriban personas concretas. Cada sala tiene un enlace directo (chat.hivescope.xyz/r/nombre-de-sala) que puedes copiar con el botón \"copiar enlace\" dentro de la sala; al abrirlo, y con la cuenta vinculada, entras directamente. El enlace deja de funcionar cuando la sala caduca. Al entrar en una sala solo se cargan los últimos 200 mensajes; sube hasta arriba (o pulsa «cargar mensajes anteriores») para traer los anteriores, de 100 en 100, con sus reacciones."
       },
       {
         "heading": "$ lista_de_salas",

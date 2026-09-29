@@ -226,6 +226,15 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    subscriptions casually — merge filters into one REQ when you can. In tests,
    several browsers share the IP, so keep an eye on both limits.
 
+   **History pagination** (`chat/history.ts`, `loadOlder`): the live sub asks
+   for `INITIAL_PAGE` (200); `mayHaveMore` (page full) decides whether to offer
+   more; older pages use `until: oldest.createdAt` (inclusive, so dedupe by id
+   via `seenRef`) and then fetch the reactions of just those ids (`#e`).
+   `ChatRoom` scrolls to the bottom only when the *newest* message id changes
+   and re-anchors the scroll with a layout effect when the *oldest* changes.
+   All of this depends on the relay honoring `limit` above 100 (see the relay's
+   "Query limits" note).
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

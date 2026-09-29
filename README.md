@@ -128,6 +128,10 @@ Each message has a ☺+ button to react with one of six emojis; chips under the 
 
 The whole app shares a single WebSocket to the relay (`src/lib/sharedRelay.ts`) instead of opening one per hook or query, so reloading the page a few times no longer trips the relay's per-IP connection limit. One-shot queries time out after 10 s instead of hanging.
 
+## Longer history
+
+A room opens with its latest 200 messages; scrolling to the top (or the "load earlier messages" button) fetches older ones 100 at a time with `until`, plus their reactions, and keeps the scroll position so the view doesn't jump (`src/features/chat/history.ts`, `loadOlder` in `useChatRoom.ts`). Needs the relay build that raises the sqlite query limits — before it, every query silently returned at most 100 events.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.

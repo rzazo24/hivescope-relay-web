@@ -130,6 +130,10 @@ Cada mensaje tiene un botón ☺+ para reaccionar con uno de seis emojis; las et
 
 Toda la app comparte un único WebSocket con el relé (`src/lib/sharedRelay.ts`) en vez de abrir uno por cada hook o consulta, así que recargar la página varias veces ya no agota el límite de conexiones por IP del relé. Las consultas puntuales vencen a los 10 s en lugar de quedarse colgadas.
 
+## Historial más largo
+
+Una sala se abre con sus últimos 200 mensajes; subir hasta arriba (o el botón «cargar mensajes anteriores») trae los anteriores de 100 en 100 con `until`, y sus reacciones, y mantiene la posición del scroll para que la vista no salte (`src/features/chat/history.ts`, `loadOlder` en `useChatRoom.ts`). Requiere la versión del relé que sube los límites de consulta de sqlite: antes, toda consulta devolvía como máximo 100 eventos sin avisar.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

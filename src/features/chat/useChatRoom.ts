@@ -4,9 +4,10 @@ import type { Subscription } from 'nostr-tools/abstract-relay'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { resolveHiveAccounts } from '../../lib/relay'
-import { getRelay } from '../../lib/sharedRelay'
+import { getRelay, queryOnce } from '../../lib/sharedRelay'
+import { INITIAL_PAGE, mayHaveMore, mergeMessages, OLDER_PAGE, toChatMessage } from './history'
 import { applyDeletion } from './deletion'
-import { parseReplyTo, replyTags } from './mentions'
+import { replyTags } from './mentions'
 import { addReaction, parseReaction, REACTION_KIND, type Reaction, removeReactions } from './reactions'
 
 export interface ChatMessage {
@@ -28,10 +29,17 @@ export interface ChatMessage {
 export function useChatRoom(slug: string, identity: NostrIdentity) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const slugRef = useRef(slug)
+  useEffect(() => {
+    slugRef.current = slug
+  }, [slug])
   const [connected, setConnected] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const relayRef = useRef<Relay | null>(null)
+  const seenRef = useRef<Set<string>>(new Set())
   const messagesRef = useRef<ChatMessage[]>([])
   useEffect(() => {
     messagesRef.current = messages
@@ -65,12 +73,15 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
   useEffect(() => {
     let cancelled = false
     const seen = new Set<string>()
+    seenRef.current = seen
 
     // Reset intencional y síncrono al cambiar de sala: tiene que pasar
     // antes de que arranque la conexión nueva, si no un remount rápido
     // entre salas mostraría un instante los mensajes de la sala anterior.
     setMessages([])
     setReactions([])
+    setHasMore(false)
+    setLoadingOlder(false)
     setConnected(false)
     setError(null)
 
@@ -90,27 +101,21 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
         // sondeamos para reflejar caídas/reconexiones reales en la UI.
         pollHandle = setInterval(() => setConnected(relay.connected), 1000)
 
-        subs.push(relay.subscribe([{ kinds: [9], '#t': [slug], limit: 200 }], {
-          onevent(event) {
-            if (seen.has(event.id)) return
-            seen.add(event.id)
-            setMessages((prev) =>
-              [
-                ...prev,
-                {
-                  id: event.id,
-                  pubkey: event.pubkey,
-                  content: event.content,
-                  createdAt: event.created_at,
-                  replyTo: parseReplyTo(event.tags),
-                  mentioned: event.tags.filter((t) => t[0] === 'p').map((t) => t[1]),
-                },
-              ].sort(
-                (a, b) => a.createdAt - b.createdAt,
-              ),
-            )
-          },
-        }))
+        let initialCount = 0
+        subs.push(
+          relay.subscribe([{ kinds: [9], '#t': [slug], limit: INITIAL_PAGE }], {
+            onevent(event) {
+              if (seen.has(event.id)) return
+              seen.add(event.id)
+              initialCount++
+              setMessages((prev) => mergeMessages(prev, [toChatMessage(event)]))
+            },
+            // una página inicial llena sugiere que hay historial más antiguo
+            oneose() {
+              setHasMore(mayHaveMore(initialCount, INITIAL_PAGE))
+            },
+          }),
+        )
 
         // Reacciones (kind 7) de esta sala, con historial y en vivo.
         subs.push(
@@ -143,6 +148,37 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
       relayRef.current = null
     }
   }, [slug, applyDeletionEvent])
+
+  /** Trae la página de mensajes anteriores al más antiguo que se ve (y sus reacciones). */
+  const loadOlder = useCallback(async () => {
+    const oldest = messagesRef.current[0]
+    if (!oldest || loadingOlder) return
+    const room = slug
+    setLoadingOlder(true)
+    try {
+      // `until` es inclusive: puede volver algún mensaje ya visto, se descarta por id
+      const { events, complete } = await queryOnce([{ kinds: [9], '#t': [slug], until: oldest.createdAt, limit: OLDER_PAGE }])
+      if (slugRef.current !== room) return // se cambió de sala mientras tanto
+      const fresh = events.filter((e) => !seenRef.current.has(e.id))
+      fresh.forEach((e) => seenRef.current.add(e.id))
+      if (fresh.length > 0) {
+        setMessages((prev) => mergeMessages(prev, fresh.map(toChatMessage)))
+        const reactionEvents = await queryOnce([{ kinds: [REACTION_KIND], '#e': fresh.map((e) => e.id), limit: 2000 }])
+        if (slugRef.current === room) {
+          for (const ev of reactionEvents.events) {
+            const reaction = parseReaction(ev)
+            if (reaction) setReactions((prev) => addReaction(prev, reaction))
+          }
+        }
+      }
+      // sin nada nuevo, o con una respuesta a medias, no hay (más) historial que traer
+      setHasMore(complete && fresh.length > 0 && mayHaveMore(events.length, OLDER_PAGE))
+    } catch {
+      // se puede volver a intentar con el botón
+    } finally {
+      if (slugRef.current === room) setLoadingOlder(false)
+    }
+  }, [slug, loadingOlder])
 
   const send = useCallback(
     async (content: string, replyTo?: { id: string; pubkey: string }) => {
@@ -257,5 +293,5 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     [identity, applyDeletionEvent],
   )
 
-  return { messages, reactions, connected, sending, error, send, remove, react, unreact }
+  return { messages, reactions, hasMore, loadingOlder, loadOlder, connected, sending, error, send, remove, react, unreact }
 }
