@@ -9,7 +9,7 @@ with [Hive Keychain](https://hive-keychain.com/), browse/create rooms, and
 chat, all backed by
 [hivescope-relay](https://github.com/rzazo24/hivescope-relay).
 
-Live at **[chat.hivescope.xyz](https://chat.hivescope.xyz)**.
+Live at **[chat.hivescope.xyz](https://chat.hivescope.xyz)**. Announcement post on Hive: [HiveScope Chat](https://peakd.com/hive-139531/@rzazo24/hivescope-chat-a-decentralized-chat-where-your-identity-is-your-hive-account-hivescope-chat-un-chat-descentralizado-donde-tu-i).
 
 This is a pure client-side SPA — no backend of its own. It talks directly
 to the relay over `wss://` and to Hive Keychain (browser extension or

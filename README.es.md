@@ -8,7 +8,7 @@ Frontend del chat de HiveScope: vincula una cuenta de [Hive](https://hive.io/)
 con [Hive Keychain](https://hive-keychain.com/), navega/crea salas, y chatea,
 todo apoyado en [hivescope-relay](https://github.com/rzazo24/hivescope-relay).
 
-En vivo en **[chat.hivescope.xyz](https://chat.hivescope.xyz)**.
+En vivo en **[chat.hivescope.xyz](https://chat.hivescope.xyz)**. Publicación de presentación en Hive: [HiveScope Chat](https://peakd.com/hive-139531/@rzazo24/hivescope-chat-a-decentralized-chat-where-your-identity-is-your-hive-account-hivescope-chat-un-chat-descentralizado-donde-tu-i).
 
 Es una SPA puramente de cliente — sin backend propio. Habla directo con el
 relé por `wss://` y con Hive Keychain (extensión de navegador o app móvil)
