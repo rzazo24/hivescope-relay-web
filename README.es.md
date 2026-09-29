@@ -122,6 +122,10 @@ Las URL http(s) de los mensajes se muestran como enlaces (`target=_blank`, `rel=
 
 Los motivos de rechazo del relé siguen en inglés en el cable (NIP-01), pero los que un usuario puede provocar de verdad —enviar demasiado rápido (límite de velocidad), un mensaje de más de 2000 caracteres, un dispositivo sin vincular, no tener conexión— se muestran como mensajes traducidos y en lenguaje llano (`src/lib/relayErrors.ts`, claves `errors.*`); cualquier otro se muestra tal como lo envió el relé.
 
+## Reacciones
+
+Cada mensaje tiene un botón ☺+ para reaccionar con uno de seis emojis; las etiquetas bajo el mensaje cuentan cuentas Hive distintas y resaltan la tuya. Una reacción es un evento NIP-25 `kind:7` (`e` id del mensaje, `p` autor, `t` sala) que se quita con un borrado NIP-09, también desde otro dispositivo de la misma cuenta. El relé solo acepta su lista cerrada de emojis, y `REACTION_EMOJIS` del frontend (`src/features/chat/reactions.ts`) debe coincidir. Requiere la versión del relé que acepta kind 7.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.

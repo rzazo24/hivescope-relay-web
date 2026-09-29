@@ -6,6 +6,7 @@ import type { NostrIdentity } from '../../lib/nostrIdentity'
 import { resolveHiveAccounts } from '../../lib/relay'
 import { applyDeletion } from './deletion'
 import { parseReplyTo, replyTags } from './mentions'
+import { addReaction, parseReaction, REACTION_KIND, type Reaction, removeReactions } from './reactions'
 
 export interface ChatMessage {
   id: string
@@ -25,6 +26,7 @@ export interface ChatMessage {
  */
 export function useChatRoom(slug: string, identity: NostrIdentity) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [reactions, setReactions] = useState<Reaction[]>([])
   const [connected, setConnected] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,22 +35,29 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
   useEffect(() => {
     messagesRef.current = messages
   }, [messages])
+  const reactionsRef = useRef<Reaction[]>([])
+  useEffect(() => {
+    reactionsRef.current = reactions
+  }, [reactions])
 
   // Aplica un borrado: al instante para los mensajes del mismo pubkey, y --tras
   // resolver las cuentas Hive-- también para los de otros dispositivos de la
   // misma cuenta, que es lo que acepta el relé.
   const applyDeletionEvent = useCallback((event: { pubkey: string; tags: string[][] }) => {
     setMessages((prev) => applyDeletion(prev, event))
+    setReactions((prev) => applyDeletion(prev, event))
 
     const targets = new Set(event.tags.filter((t) => t[0] === 'e').map((t) => t[1]))
-    const others = messagesRef.current.filter((m) => targets.has(m.id) && m.pubkey !== event.pubkey).map((m) => m.pubkey)
+    const others = [...messagesRef.current, ...reactionsRef.current]
+      .filter((m) => targets.has(m.id) && m.pubkey !== event.pubkey)
+      .map((m) => m.pubkey)
     if (others.length === 0) return
     void resolveHiveAccounts([event.pubkey, ...others]).then((accounts) => {
       const requester = accounts.get(event.pubkey)?.toLowerCase()
       if (!requester) return
-      setMessages((prev) =>
-        applyDeletion(prev, event, (author, req) => author === req || accounts.get(author)?.toLowerCase() === requester),
-      )
+      const sameAccount = (author: string, req: string) => author === req || accounts.get(author)?.toLowerCase() === requester
+      setMessages((prev) => applyDeletion(prev, event, sameAccount))
+      setReactions((prev) => applyDeletion(prev, event, sameAccount))
     })
   }, [])
 
@@ -60,6 +69,7 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     // antes de que arranque la conexión nueva, si no un remount rápido
     // entre salas mostraría un instante los mensajes de la sala anterior.
     setMessages([])
+    setReactions([])
     setConnected(false)
     setError(null)
 
@@ -100,6 +110,14 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
                 (a, b) => a.createdAt - b.createdAt,
               ),
             )
+          },
+        })
+
+        // Reacciones (kind 7) de esta sala, con historial y en vivo.
+        relay.subscribe([{ kinds: [REACTION_KIND], '#t': [slug], limit: 2000 }], {
+          onevent(event) {
+            const reaction = parseReaction(event)
+            if (reaction) setReactions((prev) => addReaction(prev, reaction))
           },
         })
 
@@ -149,6 +167,61 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     [slug, identity],
   )
 
+  /** Reacciona con `emoji` al mensaje. Publica el evento kind:7 (NIP-25). */
+  const react = useCallback(
+    async (target: { id: string; pubkey: string }, emoji: string) => {
+      const relay = relayRef.current
+      if (!relay) return
+      setError(null)
+      try {
+        const event = finalizeEvent(
+          {
+            kind: REACTION_KIND,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [
+              ['e', target.id],
+              ['p', target.pubkey],
+              ['t', slug],
+            ],
+            content: emoji,
+          },
+          identity.secretKey,
+        )
+        await relay.publish(event)
+        const reaction = parseReaction(event)
+        if (reaction) setReactions((prev) => addReaction(prev, reaction))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+      }
+    },
+    [slug, identity],
+  )
+
+  /** Quita reacciones propias (NIP-09) por id. */
+  const unreact = useCallback(
+    async (ids: string[]) => {
+      const relay = relayRef.current
+      if (!relay || ids.length === 0) return
+      setError(null)
+      try {
+        const event = finalizeEvent(
+          {
+            kind: 5,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [...ids.map((id) => ['e', id]), ['k', String(REACTION_KIND)]],
+            content: '',
+          },
+          identity.secretKey,
+        )
+        await relay.publish(event)
+        setReactions((prev) => removeReactions(prev, new Set(ids)))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+      }
+    },
+    [identity],
+  )
+
   /** Retira un mensaje propio (NIP-09). Devuelve true si el relé lo aceptó. */
   const remove = useCallback(
     async (id: string) => {
@@ -180,5 +253,5 @@ export function useChatRoom(slug: string, identity: NostrIdentity) {
     [identity, applyDeletionEvent],
   )
 
-  return { messages, connected, sending, error, send, remove }
+  return { messages, reactions, connected, sending, error, send, remove, react, unreact }
 }

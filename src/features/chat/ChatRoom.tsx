@@ -15,6 +15,7 @@ import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
 import { isOwnMessage } from './deletion'
 import { applyMention, insertMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet } from './mentions'
+import { chipsFor, myReactionIds, REACTION_EMOJIS } from './reactions'
 import { MAX_MESSAGE_LENGTH, splitMessage } from './linkify'
 import { type ChatMessage, useChatRoom } from './useChatRoom'
 
@@ -62,7 +63,7 @@ export function ChatRoom({
   onBack: () => void
 }) {
   const { t, i18n } = useTranslation()
-  const { messages, connected, sending, error, send, remove } = useChatRoom(room.slug, identity)
+  const { messages, reactions, connected, sending, error, send, remove, react, unreact } = useChatRoom(room.slug, identity)
   const online = useOnline()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -94,10 +95,19 @@ export function ChatRoom({
       delete next[id]
       return next
     })
+  // Reacciones: mías = este pubkey u otro dispositivo de mi cuenta Hive.
+  const [pickerFor, setPickerFor] = useState<string | null>(null)
+  const isMineKey = (pk: string) => isOwnMessage(pk, identity.publicKey, account, senderNames)
+  const toggleReaction = (msg: ChatMessage, emoji: string) => {
+    setPickerFor(null)
+    const ids = myReactionIds(reactions, msg.id, emoji, isMineKey)
+    if (ids.length > 0) void unreact(ids)
+    else void react(msg, emoji)
+  }
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
   const [caret, setCaret] = useState(0)
   const [pickIndex, setPickIndex] = useState(0)
-  const senderNames = useHiveAccountNames(messages.map((m) => m.pubkey))
+  const senderNames = useHiveAccountNames([...messages.map((m) => m.pubkey), ...reactions.map((r) => r.pubkey)])
 
   // Cuentas que se pueden mencionar: quien ha escrito aquí y quien está en la sala.
   const knownAccounts = [
@@ -286,6 +296,16 @@ export function ChatRoom({
                 >
                   {t('chat.reply')}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPickerFor(pickerFor === msg.id ? null : msg.id)}
+                  aria-expanded={pickerFor === msg.id}
+                  aria-label={t('chat.react')}
+                  title={t('chat.react')}
+                  className="transition hover:text-accent"
+                >
+                  ☺+
+                </button>
                 {canTranslate && !isMe && !translations[msg.id] && (
                   <button
                     type="button"
@@ -338,6 +358,39 @@ export function ChatRoom({
                   ),
                 )}
               </p>
+              {pickerFor === msg.id && (
+                <div className="mt-1 flex gap-1" role="group" aria-label={t('chat.react')}>
+                  {REACTION_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => toggleReaction(msg, emoji)}
+                      className="rounded border border-border bg-surface px-1.5 py-0.5 text-sm transition hover:border-accent"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {(() => {
+                const chips = chipsFor(reactions, msg.id, (pk) => senderNames.get(pk), isMineKey)
+                return chips.length > 0 ? (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {chips.map((chip) => (
+                      <button
+                        key={chip.emoji}
+                        type="button"
+                        onClick={() => toggleReaction(msg, chip.emoji)}
+                        title={chip.who.join(', ')}
+                        aria-pressed={chip.mine}
+                        className={`rounded-full border px-2 py-0.5 text-xs transition ${chip.mine ? 'border-accent bg-surface text-accent' : 'border-border text-muted hover:border-accent'}`}
+                      >
+                        {chip.emoji} {chip.count}
+                      </button>
+                    ))}
+                  </div>
+                ) : null
+              })()}
               {translations[msg.id] && (
                 <p className="mt-0.5 border-l-2 border-border pl-2 text-xs text-muted">
                   {translations[msg.id].status === 'loading' &&

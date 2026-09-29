@@ -206,6 +206,20 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    i18n keys via `describeRelayError`; unknown reasons pass through verbatim.
    If you reword a relay rejection message, update the regex.
 
+   **Reactions** (`chat/reactions.ts`, state in `useChatRoom`): kind:7 events
+   with `e`/`p`/`t`, one subscription per room (`#t`, limit 2000) plus the
+   existing kind:5 subscription, which also removes reactions
+   (`applyDeletion` + the async same-account path). `chipsFor` counts distinct
+   accounts; toggling off deletes *all* my-account reactions with that emoji on
+   that message (`myReactionIds`), since another device may have made it.
+   `REACTION_EMOJIS` mirrors the relay's `ReactionEmojis`.
+
+   **Connection budget warning**: one page load opens ~12 WebSockets (each hook
+   connects on its own) and the relay's `ConnectionRateLimiter` is 10/min, burst
+   30 *per IP*. Three quick reloads (or 3 Playwright contexts) get 429s — the
+   cause of many "nothing loads" test failures. Consolidating into one shared
+   connection would fix it.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other
