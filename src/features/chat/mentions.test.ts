@@ -21,6 +21,7 @@ describe('mentions', () => {
     expect(mentionsAccount('ey @ANA', 'ana')).toBe(true)
     expect(mentionsAccount('ey @ana2', 'ana')).toBe(false)
     expect(mentionsAccount('ey @ana', '')).toBe(false)
+    expect(mentionsAccount('mira https://hive.blog/@ana/post', 'ana')).toBe(false)
   })
   it('mentionQuery detecta la mención a medio escribir junto al cursor', () => {
     expect(mentionQuery('hola @be', 8)).toEqual({ start: 5, query: 'be' })

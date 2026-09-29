@@ -27,7 +27,8 @@ export function splitMentions(text: string): Piece[] {
 export function mentionsAccount(content: string, account: string): boolean {
   if (!account) return false
   const a = account.toLowerCase()
-  return splitMentions(content).some((p) => p.account === a)
+  // sin las URLs: "https://hive.blog/@ana" no es una mención a ana
+  return splitMentions(content.replace(/https?:\/\/\S+/gi, ' ')).some((p) => p.account === a)
 }
 
 /** Si el cursor está escribiendo una mención, dónde empieza (el @) y lo escrito tras ella. */

@@ -13,7 +13,8 @@ import { EmojiPicker } from '../../components/EmojiPicker'
 import { insertAtCursor } from '../../lib/emojis'
 import { roomUrl } from '../../lib/roomRoute'
 import { isOwnMessage } from './deletion'
-import { applyMention, insertMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet, splitMentions } from './mentions'
+import { applyMention, insertMention, mentionCandidates, mentionQuery, mentionsAccount, quoteSnippet } from './mentions'
+import { MAX_MESSAGE_LENGTH, splitMessage } from './linkify'
 import { type ChatMessage, useChatRoom } from './useChatRoom'
 
 function shortPubkey(pubkey: string) {
@@ -313,8 +314,18 @@ export function ChatRoom({
                 />
               )}
               <p className={`break-words ${isMe ? 'text-accent' : 'text-ink'}`}>
-                {splitMentions(msg.content).map((piece, i) =>
-                  piece.account ? (
+                {splitMessage(msg.content).map((piece, i) =>
+                  piece.url ? (
+                    <a
+                      key={i}
+                      href={piece.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="break-all underline decoration-dotted underline-offset-2 hover:text-accent"
+                    >
+                      {piece.text}
+                    </a>
+                  ) : piece.account ? (
                     <span
                       key={i}
                       className={piece.account === account.toLowerCase() ? 'rounded-sm bg-accent px-0.5 font-bold text-accent-ink' : 'font-bold text-accent'}
@@ -396,6 +407,7 @@ export function ChatRoom({
             setCaret(e.target.selectionStart ?? e.target.value.length)
             setPickIndex(0)
           }}
+          maxLength={MAX_MESSAGE_LENGTH}
           onKeyDown={handleKeyDown}
           onKeyUp={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}
           onClick={(e) => setCaret(e.currentTarget.selectionStart ?? 0)}

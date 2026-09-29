@@ -195,6 +195,12 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    pack). Playwright's Chromium exposes the APIs but has no models, so tests
    stub `window.Translator`/`LanguageDetector`.
 
+   **Links and length** (`chat/linkify.ts`): `splitMessage` splits URLs *first*
+   and then mentions on the rest (so `@x` inside a URL isn't a mention; the
+   same stripping is in `mentionsAccount`). Only http(s) with a dotted host
+   becomes an `<a>`. `MAX_MESSAGE_LENGTH` (2000) mirrors the relay's
+   `MaxChatMessageLength`; change both together.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

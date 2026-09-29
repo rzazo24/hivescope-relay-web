@@ -112,6 +112,10 @@ Each sender in the chat (and each person in the online list) shows their Hive pr
 
 Other people's messages get a "translate" link when the browser has the built-in Translator and LanguageDetector APIs (recent desktop Chrome/Edge). Translation happens on the device — nothing is sent to a third-party service — into the UI language; already-in-your-language, unknown and unsupported pairs are reported instead. Where the APIs don't exist (Firefox, Safari, mobile) the link simply isn't shown. See `src/lib/translate.ts`.
 
+## Links and message length
+
+http(s) URLs in messages are rendered as links (`target=_blank`, `rel="noopener noreferrer nofollow"`; trailing punctuation is left out and an `@` inside a URL is not a mention). Messages are capped at 2000 characters, enforced by the relay and mirrored in the input's `maxLength` (`src/features/chat/linkify.ts`).
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.
