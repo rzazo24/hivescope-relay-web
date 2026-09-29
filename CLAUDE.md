@@ -201,6 +201,11 @@ pubkeys, so this isn't a real limitation, just a UX simplification).
    becomes an `<a>`. `MAX_MESSAGE_LENGTH` (2000) mirrors the relay's
    `MaxChatMessageLength`; change both together.
 
+   **Relay error wording**: `relayErrors.ts` maps a few relay reasons (regexes
+   on the English text — rate limit, too long, not linked, offline) to `errors.*`
+   i18n keys via `describeRelayError`; unknown reasons pass through verbatim.
+   If you reword a relay rejection message, update the regex.
+
    **Message counts and unread badges** also live in `useRooms.ts`: one
    `fetchRoomMessages` REQ (`kinds:[9], #t:[all slugs], limit 5000`) every 60 s
    feeds both `tallyMessages` (count) and `tallyUnread` (messages from other

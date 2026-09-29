@@ -159,5 +159,11 @@
     "off": "🔕 alerts off",
     "title": "Browser alerts when someone mentions you or replies to you while this tab is in the background",
     "blocked": "Alerts are blocked in your browser settings for this site"
+  },
+  "errors": {
+    "rateLimited": "You're sending too fast — wait a few seconds and try again.",
+    "tooLong": "That message is too long (the limit is 2000 characters).",
+    "notLinked": "This device isn't linked to a Hive account yet — link it again to write.",
+    "offline": "Couldn't reach the relay — check your connection and try again."
   }
 }

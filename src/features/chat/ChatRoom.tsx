@@ -1,5 +1,6 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { describeRelayError } from '../../lib/relayErrors'
 import { translateText, translationSupported, type TranslateResult } from '../../lib/translate'
 import { useHiveAccountNames } from '../../hooks/useHiveAccountNames'
 import type { NostrIdentity } from '../../lib/nostrIdentity'
@@ -428,7 +429,7 @@ export function ChatRoom({
         </button>
       </form>
 
-      {error && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {error}</p>}
+      {error && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {describeRelayError(error, t)}</p>}
 
       {pendingDelete && (
         <ConfirmModal

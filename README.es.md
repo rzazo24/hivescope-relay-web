@@ -118,6 +118,10 @@ Los mensajes de los demás llevan un enlace «traducir» cuando el navegador tie
 
 Las URL http(s) de los mensajes se muestran como enlaces (`target=_blank`, `rel="noopener noreferrer nofollow"`; la puntuación final se deja fuera y una `@` dentro de una URL no es una mención). Los mensajes tienen un máximo de 2000 caracteres, que impone el relé y replica el `maxLength` del campo de texto (`src/features/chat/linkify.ts`).
 
+## Errores del relé más claros
+
+Los motivos de rechazo del relé siguen en inglés en el cable (NIP-01), pero los que un usuario puede provocar de verdad —enviar demasiado rápido (límite de velocidad), un mensaje de más de 2000 caracteres, un dispositivo sin vincular, no tener conexión— se muestran como mensajes traducidos y en lenguaje llano (`src/lib/relayErrors.ts`, claves `errors.*`); cualquier otro se muestra tal como lo envió el relé.
+
 ## Enlaces a salas
 
 Cada sala tiene un enlace directo, `/r/<nombre-de-sala>`, que puedes copiar desde dentro de la sala. Al abrirlo vas directamente a la sala (tras vincularte, si aún no lo estabas); si la sala no existe o ha caducado, acabas en la lista con un aviso. El snap de Hive que puedes compartir al crear una sala también enlaza a ella.
@@ -157,7 +161,7 @@ recordado en localStorage. Todos los strings de la UI pasan por
 Los motivos de rechazo del relé (se muestran tal cual cuando algo es
 inválido) están en inglés, siguiendo la convención de NIP-01 para mensajes
 OK pensados para que los lea cualquier cliente Nostr — no se retraducen del
-lado del cliente.
+lado del cliente (salvo los pocos que un usuario puede provocar, ver «Errores del relé más claros»).
 
 ## Tema
 

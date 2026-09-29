@@ -116,6 +116,10 @@ Other people's messages get a "translate" link when the browser has the built-in
 
 http(s) URLs in messages are rendered as links (`target=_blank`, `rel="noopener noreferrer nofollow"`; trailing punctuation is left out and an `@` inside a URL is not a mention). Messages are capped at 2000 characters, enforced by the relay and mirrored in the input's `maxLength` (`src/features/chat/linkify.ts`).
 
+## Friendlier relay errors
+
+The relay's rejection reasons stay in English on the wire (NIP-01), but the ones a user can actually trigger — sending too fast (rate limit), a message over 2000 characters, an unlinked device, no connection — are shown as translated, plain-language messages (`src/lib/relayErrors.ts`, keys under `errors.*`); anything else is shown as the relay sent it.
+
 ## Room links
 
 Every room has a direct link, `/r/<room-name>`, that you can copy from inside the room. Opening it goes straight to the room (after linking, if you weren't yet); if the room doesn't exist or has expired you land on the list with a notice. The Hive snap you can share after creating a room links to it too.
@@ -156,7 +160,7 @@ start — see `src/i18n/locales/*.json`.
 
 Relay rejection reasons (shown as-is when something's invalid) are in
 English, matching NIP-01 convention for OK messages meant to be read by
-any Nostr client — they aren't re-translated client-side.
+any Nostr client — they aren't re-translated client-side (except the few a user can trigger, see "Friendlier relay errors").
 
 ## Theme
 

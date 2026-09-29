@@ -159,5 +159,11 @@
     "off": "🔕 avisos no",
     "title": "Avisos del navegador cuando alguien te menciona o te responde con esta pestaña en segundo plano",
     "blocked": "Los avisos están bloqueados para este sitio en los ajustes del navegador"
+  },
+  "errors": {
+    "rateLimited": "Estás enviando demasiado rápido: espera unos segundos e inténtalo de nuevo.",
+    "tooLong": "El mensaje es demasiado largo (el máximo es de 2000 caracteres).",
+    "notLinked": "Este dispositivo aún no está vinculado a una cuenta de Hive: vincúlalo de nuevo para escribir.",
+    "offline": "No se pudo conectar con el relé: revisa tu conexión e inténtalo de nuevo."
   }
 }

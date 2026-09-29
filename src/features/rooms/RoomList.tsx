@@ -13,6 +13,7 @@ import { canManageRoom, DEFAULT_ROOM_LIFETIME_SECONDS, filterRooms, formatTimeRe
 import { quoteSnippet } from '../chat/mentions'
 import { showNotification } from '../../lib/notifications'
 import { resolveHiveAccounts } from '../../lib/relay'
+import { describeRelayError } from '../../lib/relayErrors'
 import { titleWithUnread } from '../../lib/unread'
 import { useRooms } from './useRooms'
 
@@ -138,7 +139,7 @@ function RoomRow({
               {t('rooms.cancel')}
             </button>
           </div>
-          {saveError && <p className="text-xs text-error">! {saveError}</p>}
+          {saveError && <p className="text-xs text-error">! {describeRelayError(saveError, t)}</p>}
         </form>
       </li>
     )
@@ -394,7 +395,7 @@ export function RoomList({ identity, account }: { identity: NostrIdentity; accou
           </button>
         </div>
         <LifetimeSelector value={newRoomLifetimeSeconds} onChange={setNewRoomLifetimeSeconds} disabled={creating} />
-        {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {createError}</p>}
+        {createError && <p className="rounded-md bg-error-bg px-3 py-2.5 text-xs text-error">! {describeRelayError(createError, t)}</p>}
         {snapOffer && snapStatus !== 'posting' && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span>{t('rooms.snapOffer', { name: snapOffer.name })}</span>
